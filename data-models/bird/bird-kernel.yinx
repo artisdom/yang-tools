@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submodule name="bird-kernel"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:bird="http://www.nic.cz/ns/bird">
+  <belongs-to module="bird">
+    <prefix value="bird"/>
+  </belongs-to>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+  <include module="bird-nest"/>
+  <include module="bird-features"/>
+  <description>
+    <text>
+      Configuration of the BIRD 'kernel' pseudo-protocol.
+    </text>
+  </description>
+
+  <identity name="kernel">
+    <base name="rt:routing-protocol"/>
+  </identity>
+
+  <augment
+      target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">
+    <when condition="rt:type = 'bird:kernel'"/>
+    <leaf name="persist">
+      <type name="boolean"/>
+      <default value="false"/>
+      <description>
+	<text>
+	  If this switch is true, BIRD leaves all its routes in the
+	  kernel routing table when exiting.
+	</text>
+      </description>
+    </leaf>
+    <leaf name="scan-time">
+      <type name="uint32">
+	<range value="1..max"/>
+      </type>
+      <description>
+	<text>
+	  Interval between consecutive scans of the 'kernel' table.
+	</text>
+      </description>
+      <units name="seconds"/>
+    </leaf>
+    <leaf name="learn">
+      <if-feature name="route-origin"/>
+      <type name="boolean"/>
+      <default value="false"/>
+      <description>
+	<text>
+	  If this switch is true, BIRD will learn routes added to the
+	  kernel routing tables through other means.
+	</text>
+      </description>
+    </leaf>
+    <leaf name="push-direct-routes">
+      <type name="boolean"/>
+      <default value="false"/>
+      <description>
+	<text>
+	  <h:p>If this switch is true, direct routes from BIRD are pushed
+	  to the kernel routing table.</h:p>
+	  <h:p>This is normally disabled because the kernel itself manages
+	  the direct routes.</h:p>
+	</text>
+      </description>
+    </leaf>
+    <leaf name="kernel-table">
+      <if-feature name="multiple-kernel-tables"/>
+      <type name="uint8"/>
+      <description>
+	<text>
+	  <h:p>Select the native kernel table to be used as the
+	  'kernel' table (FIB).</h:p>
+	  <h:p>The default is system-specific.</h:p>
+	</text>
+      </description>
+      <must condition="not(. =
+		       ../preceding-sibling::rt:routing-protocol
+		       [rt:type = 'bird:kernel']/kernel-table)"/>
+    </leaf>
+  </augment>
+</submodule>

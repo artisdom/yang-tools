@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submodule name="bird-rip"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:bird="http://www.nic.cz/ns/bird">
+  <belongs-to module="bird">
+    <prefix value="bird"/>
+  </belongs-to>
+  <import module="ietf-inet-types">
+    <prefix value="inet"/>
+  </import>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+  <include module="bird-nest"/>
+  <description>
+    <text>
+      Configuration of the RIP protocol.
+    </text>
+  </description>
+
+  <identity name="rip">
+    <base name="rt:routing-protocol"/>
+  </identity>
+
+  <grouping name="rip-route-content">
+    <leaf name="rip-metric">
+      <type name="uint16"/>
+      <description>
+	<text>
+	  Metric of the route. Its value must be between 0 and
+	  'infinity', which is configurable in BIRD (the standard
+	  value is 16).
+	</text>
+      </description>
+      <default value="1"/>
+    </leaf>
+    <leaf name="rip-tag">
+      <type name="uint16"/>
+      <description>
+	<text>
+	  <h:p>RIP route tag.</h:p>
+	  <h:p>It can be used to carry additional info, such as the
+	  number of the originating AS (for external routes).</h:p>
+	</text>
+      </description>
+      <default value="0"/>
+    </leaf>
+  </grouping>
+
+  <augment target-node="/rt:routing/rt:routing-tables/rt:routing-table/rt:routes/rt:route">
+    <description>
+      <text>RIP-specific route attributes.</text>
+    </description>
+    <uses name="rip-route-content"/>
+  </augment>
+
+  <augment target-node="/rt:active-route/rt:output/rt:route">
+    <description>
+      <text>
+	RIP-specific route attributes in the output of 'active-route' RPC.
+      </text>
+    </description>
+    <uses name="rip-route-content"/>
+  </augment>
+
+  <augment
+      target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">
+    <when condition="rt:type = 'bird:rip'"/>
+    <uses name="protocol-interfaces">
+      <augment target-node="interfaces/interface">
+	<description>
+	  <text>RIP-specific interface configuration.</text>
+	</description>
+	<leaf name="metric">
+	  <description>
+	    <text>
+	      Metric assigned to the link to which the interface is
+	      connected.
+	    </text>
+	  </description>
+	  <type name="uint16">
+	    <range value="1..max"/>
+	  </type>
+	  <must condition=". &lt;= ../../../infinity">
+	    <description>
+	      <text>The metric must not be greater that the
+	      (configurable) infinity.</text>
+	    </description>
+	    <error-message>
+	      <value>Metric too large.</value>
+	    </error-message>
+	  </must>
+	</leaf>
+	<leaf name="broadcast-mode">
+	  <description>
+	    <text>
+	      If true, use the broadcast mode. Otherwise, multicast is
+	      used.
+	    </text>
+	  </description>
+	  <type name="boolean"/>
+	  <default value="false"/>
+	</leaf>
+	<leaf name="restricted-operation">
+	  <description>
+	    <text>
+	      Allows for operating RIP only in one direction.
+	    </text>
+	  </description>
+	  <type name="enumeration">
+	    <enum name="none">
+	      <description>
+		<text>Normal operation.</text>
+	      </description>
+	    </enum>
+	    <enum name="quiet">
+	      <description>
+		<text>
+		  Only listen, don't send any messages.
+		</text>
+	      </description>
+	    </enum>
+	    <enum name="nolisten">
+	      <description>
+		<text>
+		  Don't listen to RIP messages, send as usual.
+		</text>
+	      </description>
+	    </enum>
+	  </type>
+	  <default value="none"/>
+	</leaf>
+      </augment>
+    </uses>
+    <uses name="rip-ospf-passwords"/>
+    <leaf name="rip-authentication">
+      <type name="enumeration">
+	<enum name="none">
+	  <description>
+	    <text>No authentication.</text>
+	  </description>
+	</enum>
+	<enum name="plaintext">
+	  <description>
+	    <text>Plaintext password.</text>
+	  </description>
+	</enum>
+	<enum name="md5">
+	  <description>
+	    <text>MD5 hash.</text>
+	  </description>
+	</enum>
+      </type>
+      <default value="none"/>
+      <must condition=". = 'none' or ../passwords/password">
+	<error-message>
+	  <value>
+	    No password set.
+	  </value>
+	</error-message>
+	<description>
+	  <text>A password has to be configured if the value is
+	  'plaintext' or 'md5'.</text>
+	</description>
+      </must>
+      <description>
+	<text>
+	  Method of RIP packet authentication.
+	</text>
+      </description>
+    </leaf>
+    <leaf name="honor-dump">
+      <description>
+	<text>
+	  Specifies which requests for routing table dumps are honored.
+	</text>
+      </description>
+      <type name="enumeration">
+	<enum name="always">
+	  <description>
+	    <text>
+	      All dump requests are honored.
+	    </text>
+	  </description>
+	</enum>
+	<enum name="neighbor">
+	  <description>
+	    <text>
+	      Only requests from hosts on directly connected networks
+	      are honored.
+	    </text>
+	  </description>
+	</enum>
+	<enum name="never">
+	  <description>
+	    <text>
+	      No dump requests are honored.
+	    </text>
+	  </description>
+	</enum>
+      </type>
+      <default value="never"/>
+    </leaf>
+    <leaf name="port">
+      <description>
+	<text>
+	  <h:p>Configure the port number to operate on.</h:p>
+	  <h:p>Setting this parameter to a non-default value breaks
+	  the RIP standard.</h:p>
+	</text>
+      </description>
+      <type name="inet:port-number"/>
+      <default value="520"/>
+    </leaf>
+    <leaf name="infinity">
+      <description>
+	<text>
+	  <h:p>Configure the metric value that is considered infinite.</h:p>
+	  <h:p>Setting this parameter to a non-default value breaks
+	  the RIP standard.</h:p>
+	</text>
+      </description>
+      <type name="uint16"/>
+      <default value="16"/>
+    </leaf>
+    <leaf name="update-interval">
+      <description>
+	<text>
+	  <h:p>Time interval between periodic updates.</h:p>
+	  <h:p>Values lower than 10 are not recommended.</h:p>
+	  <h:p>Setting this parameter to a non-default value breaks
+	  the RIP standard.</h:p>
+	</text>
+      </description>
+      <type name="uint16">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+      <default value="30"/>
+    </leaf>
+    <leaf name="unreachable-timeout">
+      <description>
+	<text>
+	  <h:p>Maximum age of a route after which it is considered unreachable.</h:p>
+	  <h:p>By default it is 4 * route-timeout.</h:p>
+	  <h:p>Setting this parameter to a non-default value breaks
+	  the RIP standard.</h:p>
+	</text>
+      </description>
+      <type name="uint16">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+    </leaf>
+    <leaf name="discard-timeout">
+      <description>
+	<text>
+	  <h:p>The age of a route at which it is discarded.</h:p>
+	  <h:p>By default it is 10 * route-timeout.</h:p>
+	  <h:p>Setting this parameter to a non-default value breaks
+	  the RIP standard.</h:p>
+	</text>
+      </description>
+      <type name="uint16">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+    </leaf>
+  </augment>
+</submodule>

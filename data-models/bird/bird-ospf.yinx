@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submodule name="bird-ospf"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:bird="http://www.nic.cz/ns/bird">
+  <belongs-to module="bird">
+    <prefix value="bird"/>
+  </belongs-to>
+  <import module="ietf-inet-types">
+    <prefix value="inet"/>
+  </import>
+  <import module="ietf-yang-types">
+    <prefix value="yang"/>
+  </import>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+  <include module="bird-nest"/>
+  <description>
+    <text>
+      Configuration of the OSPF protocol.
+    </text>
+  </description>
+  <reference>
+    <text>
+      <h:ul>
+	<h:li>RFC 2328: OSPF Version 2</h:li>
+	<h:li>RFC 5340: OSPF for IPv6</h:li>
+      </h:ul>
+    </text>
+  </reference>
+
+  <identity name="ospf">
+    <base name="rt:routing-protocol"/>
+  </identity>
+
+  <identity name="ospfv3">
+    <base name="rt:routing-protocol"/>
+  </identity>
+
+  <typedef name="ospf-cost">
+    <description>
+      <text>
+	Cost (metric) of an OSPF link or route.
+      </text>
+    </description>
+    <type name="uint32">
+      <range value="1..16777215"/>
+    </type>
+  </typedef>
+
+  <grouping name="ospf-route-content">
+    <container name="ospf-metric">
+      <description>
+	<text>
+	  OSPF route metric.
+	</text>
+      </description>
+      <leaf name="type">
+	<description>
+	  <text>
+	    <h:p>OSPF metric type.</h:p>
+	    <h:p>Metric of type 1 is comparable with internal
+	    metrics. </h:p>
+	  </text>
+	</description>
+	<type name="enumeration">
+	  <enum name="internal">
+	    <description>
+	      <text>Internal metric.</text>
+	    </description>
+	  </enum>
+	  <enum name="external-type-1">
+	    <description>
+	      <text>External metric comparable to internal metrics.</text>
+	    </description>
+	  </enum>
+	  <enum name="external-type-2">
+	    <description>
+	      <text>
+		External metric that is always considered larger than
+		any internal metric.
+	      </text>
+	    </description>
+	  </enum>
+	</type>
+	<default value="external-type-2"/>
+      </leaf>
+      <leaf name="value">
+	<description>
+	  <text>Value of the metric.</text>
+	</description>
+	<type name="ospf-cost"/>
+	<default value="10000"/>
+      </leaf>
+    </container>
+    <leaf name="ospf-tag">
+      <type name="uint32"/>
+      <description>
+	<text>
+	  <h:p>OSPF route tag.</h:p>
+	  <h:p>It can be used to carry additional info that may be
+	  used if the route is exported.</h:p>
+	</text>
+      </description>
+      <default value="0"/>
+    </leaf>
+  </grouping>
+
+  <grouping name="ospf-network-list-spec">
+    <list name="network">
+      <key value="prefix"/>
+      <description>
+	<text>
+	  Specification of a network prefix.
+	</text>
+      </description>
+      <leaf name="prefix">
+	<description>
+	  <text>
+	    IPv4 or IPv6 prefix.
+	  </text>
+	</description>
+	<type name="inet:ip-prefix"/>
+      </leaf>
+      <leaf name="hidden">
+	<description>
+	  <text>
+	    If true, the prefix is excluded. 
+	  </text>
+	</description>
+	<type name="boolean"/>
+	<default value="false"/>
+      </leaf>
+    </list>
+  </grouping>
+
+  <grouping name="if-vlink-pars">
+    <description>
+      <text>
+	Common interface and vlink configuration.
+      </text>
+    </description>
+    <leaf name="hello-interval">
+      <description>
+	<text>
+	  <h:p>Time interval between subsequent hello messages
+	  sent out of this interface.</h:p>
+	  <h:p>All routers on the same link must use the same
+	  value.</h:p>
+	</text>
+      </description>
+      <type name="uint16">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+      <default value="10"/>
+    </leaf>
+    <leaf name="retransmit-interval">
+      <description>
+	<text>
+	  Time interval between retransmissions of unacknowledged updates. 
+	</text>
+      </description>
+      <type name="uint32">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+      <default value="5"/>
+    </leaf>
+    <choice name="dead-neighbor">
+      <default value="dead-hello-count"/>
+      <leaf name="dead-hello-count">
+	<description>
+	  <text>
+	    A neighbor will be considered down if we don't see any
+	    messages from it for dead-count * hello-interval
+	    seconds.
+	  </text>
+	</description>
+	<type name="uint32">
+	  <range value="1..max"/>
+	</type>
+	<default value="4"/>
+      </leaf>
+      <leaf name="dead-interval">
+	<description>
+	  <text>
+	    A neighbor is considered down if no messages are seen
+	    from it during this time interval. 
+	  </text>
+	</description>
+	<type name="uint32"/>
+	<units name="seconds"/>
+      </leaf>
+    </choice>
+    <leaf name="wait-delay">
+      <description>
+	<text>
+	  Number os seconds to wait before exiting the Waiting state. 
+	</text>
+      </description>
+      <type name="uint32"/>
+      <units name="seconds"/>
+      <default value="40"/>
+    </leaf>
+    <uses name="rip-ospf-passwords"/>
+  </grouping>
+
+  <grouping name="if-pars">
+    <description>
+      <text>
+	Interface parameters common for OSPF v2 and v3.
+      </text>
+    </description>
+    <leaf name="name">
+      <type name="leafref">
+	<path value="../../../../../../../rt:interfaces/rt:interface/rt:name"/>
+      </type>
+    </leaf>
+    <leaf name="cost">
+      <description>
+	<text>
+	  Output cost of the interface.
+	</text>
+      </description>
+      <type name="ospf-cost"/>
+      <default value="10"/>
+    </leaf>
+    <choice name="stub-or-not">
+      <leaf name="stub">
+	<description>
+	  <text>
+	    <h:p>Presence of this leaf indicates an interface to a stub area.</h:p>
+	    <h:p>Such and interface does not send any hello messages
+	    and doesn't listen to OSPF packets.</h:p>
+	  </text>
+	</description>
+	<type name="empty"/>
+      </leaf>
+      <case name="no-stub">
+	<uses name="if-vlink-pars"/>
+	<leaf name="poll-interval">
+	  <description>
+	    <text>
+	      Time interval between subsequent hello messages sent to
+	      a neighbor on an NBMA network.
+	    </text>
+	  </description>
+	  <type name="uint32">
+	    <range value="1..max"/>
+	  </type>
+	  <units name="seconds"/>
+	  <default value="20"/>
+	</leaf>
+	<leaf name="priority">
+	  <description>
+	    <text>
+	      Priority of the router instance for the election of
+	      Designated Router.
+	    </text>
+	  </description>
+	  <type name="uint8"/>
+	  <default value="1"/>
+	</leaf>
+	<leaf name="rx-buffer-size">
+	  <description>
+	    <text>
+	      Size of the buffer for receiving OSPF packets. It should
+	      be chosen to be larger than the maximum size of any
+	      receive OSPF packet.
+	    </text>
+	  </description>
+	  <type name="enumeration">
+	    <enum name="normal">
+	      <description>
+		<text>
+		  RX buffer size = 2 * MTU 
+		</text>
+	      </description>
+	    </enum>
+	    <enum name="large">
+	      <description>
+		<text>
+		  RX buffer size = 65535 (maximux OSPF packet size)
+		</text>
+	      </description>
+	    </enum>
+	  </type>
+	  <default value="normal"/>
+	</leaf>
+	<leaf name="link-type">
+	  <description>
+	    <text>
+	      <h:p>Type of the link to which the interface is
+	      connected.</h:p>
+	      <h:p>BIRD auto-detects the link type. This parameter is
+	      used to enforce the behavior that is used for a
+	      different link type.</h:p>
+	    </text>
+	  </description>
+	  <type name="enumeration">
+	    <enum name="bcast">
+	      <description>
+		<text>Broadcast network.</text>
+	      </description>
+	    </enum>
+	    <enum name="ptp">
+	      <description>
+		<text>Point-to-point link.</text>
+	      </description>
+	    </enum>
+	    <enum name="nbma">
+	      <description>
+		<text>Non-broadcast multi-access network.</text>
+	      </description>
+	    </enum>
+	    <enum name="ptmp">
+	      <description>
+		<text>Point-to-multipoint network.</text>
+	      </description>
+	    </enum>
+	  </type>
+	</leaf>
+	<leaf name="strict-nonbroadcast">
+	  <must condition="../type = 'nbma' or ../type = 'ptmp'">
+	    <error-message>
+	      <value>
+		'strict-nonbroadcast' is only allowed for 'nbma' or
+		'ptmp' link types.
+	      </value>
+	    </error-message>
+	  </must>
+	  <description>
+	    <text>
+	      If true, hello is not sent to an undefined neighbor.
+	    </text>
+	  </description>
+	  <type name="boolean"/>
+	  <default value="false"/>
+	</leaf>
+	<leaf name="force-broadcast">
+	  <must condition="../type = 'bcast' or ../type = 'ptp'">
+	    <error-message>
+	      <value>
+		'force-broadcast' is only allowed for 'bcast' or
+		'ptp' link types.
+	      </value>
+	    </error-message>
+	  </must>
+	  <description>
+	    <text>
+	      <h:p>On broadcast and PtP networks, OSPF packets are
+	      normally sent as multicast packets. If this switch
+	      is true, broadcast is used instead.</h:p>
+	      <h:p>NOTE: The use of broadcast is non-standard and may
+	      lead to interoperability problems.</h:p>
+	    </text>
+	  </description>
+	  <type name="boolean"/>
+	  <default value="false"/>
+	</leaf>
+	<leaf name="check-link">
+	  <description>
+	    <text>
+	      <h:p>Observe hardware link state as reported by the
+	      operating system.</h:p>
+	      <h:p>Whenever a link disappears, the
+	      neighbors connected though it are immediately considered
+	      unreachable and only the interface address (rather than
+	      the prefix of the entire network) is propagated.</h:p>
+	      <h:p>NOTE: Some operating systems or drivers don't
+	      provide the link state information.</h:p>
+	    </text>
+	  </description>
+	  <type name="boolean"/>
+	  <default value="false"/>
+	</leaf>
+	<leaf name="ecmp-weight">
+	  <description>
+	    <text>
+	      Relative ECMP weight used for nexthops going through
+	      this interface.
+	    </text>
+	  </description>
+	  <must condition="ancestor::rt:routing-protocol/ecmp">
+	    <error-message>
+	      <value>
+		ECMP is disabled.
+	      </value>
+	    </error-message>
+	  </must>
+	  <type name="uint16">
+	    <range value="1..256"/>
+	  </type>
+	  <default value="1"/>
+	</leaf>
+      </case>
+    </choice>
+  </grouping>
+
+  <grouping name="vlink-pars">
+    <description>
+      <text>
+	Virtual link parameters common for OSPF v2 and v3.
+      </text>
+    </description>
+    <leaf name="peer-id">
+      <type name="yang:dotted-quad"/>
+      <description>
+	<text>
+	  Router ID of the other end of the virtual link.
+	</text>
+      </description>
+    </leaf>
+    <uses name="if-vlink-pars"/>
+  </grouping>
+
+  <augment target-node="/rt:routing/rt:routing-tables/rt:routing-table/rt:routes/rt:route">
+    <description>
+      <text>OSPF-specific route attributes.</text>
+    </description>
+    <uses name="ospf-route-content"/>
+  </augment>
+
+  <augment target-node="/rt:active-route/rt:output/rt:route">
+    <description>
+      <text>
+	OSPF-specific route attributes in the output of 'active-route' RPC.
+      </text>
+    </description>
+    <uses name="ospf-route-content"/>
+  </augment>
+
+  <augment
+      target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">
+    <when condition="rt:type = 'bird:ospf'"/>
+    <leaf name="rfc1583-compatibility">
+      <description>
+	<text>
+	  Indicates whether routing table calculation is compatible
+	  with RFC 1583.
+	</text>
+      </description>
+      <type name="boolean"/>
+      <default value="false"/>
+    </leaf>
+    <leaf name="tick">
+      <description>
+	<text>Time period of route re-calculation.</text>
+      </description>
+      <type name="uint16">
+	<range value="1..max"/>
+      </type>
+      <units name="seconds"/>
+      <default value="1"/>
+    </leaf>
+    <container name="ecmp">
+      <presence value="enable ECMP"/>
+      <description>
+	<text>
+	  Presence of this container indicates that OSPF is allowed to
+	  generate ECMP (equal-cost multi-path) routes.
+	</text>
+      </description>
+      <leaf name="limit">
+	<description>
+	  <text>
+	    Maximum number of next hops in one route.
+	  </text>
+	</description>
+	<type name="uint16">
+	  <range value="1..max"/>
+	</type>
+	<default value="16"/>
+      </leaf>
+    </container>
+    <container name="ospf-areas">
+      <description>
+	<text>
+	  Configuration of OSPF areas.
+	</text>
+      </description>
+      <must condition="area/id = 0 or area/id = '0.0.0.0'">
+	<description>
+	  <text>The backbone area must always be configured.</text>
+	</description>
+	<error-message>
+	  <value>
+	    Backbone area missing.
+	  </value>
+	</error-message>
+      </must>
+      <list name="area">
+	<key value="id"/>
+	<description>
+	  <text>
+	    Each entry configures an OSPF area.
+	  </text>
+	</description>
+	<leaf name="id">
+	  <description>
+	    <text>
+	      <h:p>Unique OSPF area identifier.</h:p>
+	      <h:p>It is a 32-bit unsigned value that may be specified
+	      in either integer or dotted quad format.</h:p>
+	    </text>
+	  </description>
+	  <type name="union">
+	    <type name="uint32"/>
+	    <type name="yang:dotted-quad"/>
+	  </type>
+	</leaf>
+	<leaf name="type">
+	  <description>
+	    <text>Determines the type of the area.</text>
+	  </description>
+	  <type name="enumeration">
+	    <enum name="standard">
+	      <description>
+		<text>Standard area.</text>
+	      </description>
+	    </enum>
+	    <enum name="stub">
+	      <description>
+		<text>Stub area.</text>
+	      </description>
+	    </enum>
+	    <enum name="nssa">
+	      <description>
+		<text>Not so stubby area.</text>
+	      </description>
+	      <reference>
+		<text>
+		  RFC 3101: The OSPF Not-So-Stubby Area (NSSA) Option 
+		</text>
+	      </reference>
+	    </enum>
+	  </type>
+	  <default value="standard"/>
+	</leaf>
+	<container name="summaries">
+	  <presence value="enable summary LSAs into stub or nssa"/>
+	  <must condition="../type = 'stub' or ../type = 'nssa'">
+	    <error-message>
+	      <value>
+		'summaries' is only allowed for stub or NSSA areas.
+	      </value>
+	    </error-message>
+	  </must>
+	  <description>
+	    <text>
+	      Presence of this container indicates that summary LSAs
+	      are propagated as usual into a stub or NSSA area.
+	      Otherwise, just the default route is propagated.
+	    </text>
+	  </description>
+	  <leaf name="default-nssa">
+	    <must condition="../../type = 'nssa'">
+	      <error-message>
+		<value>
+		  'default-nssa' is only allowed for NSSA areas.
+		</value>
+	      </error-message>
+	    </must>
+	    <description>
+	      <text>
+		Indicates whether the default route is propagated into
+		the NSSA area.
+	      </text>
+	    </description>
+	    <type name="boolean"/>
+	    <default value="false"/>
+	  </leaf> 
+	</container>
+	<container name="default-lsa">
+	  <must condition="../type = 'stub' or ../type = 'nssa'">
+	    <error-message>
+	      <value>
+		'default-lsa' is only allowed for stub or NSSA areas.
+	      </value>
+	    </error-message>
+	  </must>
+	  <description>
+	    <text>
+	      Parameters of the default route propagated into stub and
+	      NSSA areas.
+	    </text>
+	  </description>
+	  <leaf name="type">
+	    <description>
+	      <text>
+		Type of the default LSA.
+	      </text>
+	    </description>
+	    <type name="enumeration">
+	      <enum name="type-1"/>
+	      <enum name="type-2"/>
+	    </type>
+	    <default value="type-1"/>
+	  </leaf>
+	  <leaf name="cost">
+	    <description>
+	      <text>
+		Cost of the default route propagated into a stub or NSSA area.
+	      </text>
+	    </description>
+	    <type name="ospf-cost"/>
+	    <default value="1000"/>
+	  </leaf>
+	</container>
+	<leaf name="translator">
+	  <description>
+	    <text>
+	      <h:p>Setting this switch to true forces the router
+	      instance into translating NSSA-LSAs to external
+	      LSAs.</h:p>
+	      <h:p>The default behavior is that one translator is
+	      elected per NSSA from all ABRs.</h:p>
+	    </text>
+	  </description>
+	  <must condition="../type = 'nssa'">
+	    <error-message>
+	      <value>
+		  'translator' is only allowed for NSSA areas.
+	      </value>
+	    </error-message>
+	  </must>
+	  <type name="boolean"/>
+	  <default value="false"/>
+	</leaf>
+	<leaf name="translator-stability">
+	  <description>
+	    <text>
+	      <h:p>NSSA-LSA translator stability interval.</h:p>
+	      <h:p>This router instance continues to perform the
+	      translator function for this time interval after a new
+	      translator is elected.</h:p>
+	    </text>
+	  </description>
+	  <must condition="../type = 'nssa'">
+	    <error-message>
+	      <value>
+		  'translator-stability' is only allowed for NSSA areas.
+	      </value>
+	    </error-message>
+	  </must>
+	  <type name="uint32"/>
+	  <units name="seconds"/>
+	  <default value="40"/>
+	</leaf>
+	<container name="summary-lsa-networks">
+	  <description>
+	    <text>
+	      <h:p>Configuration of networks that are used in summary LSAs
+	      originated from this router instance.</h:p>
+	      <h:p>Hidden network are not propagated to other areas.</h:p>
+	    </text>
+	  </description>
+	  <uses name="ospf-network-list-spec"/>
+	</container>
+	<container name="external-networks">
+	  <description>
+	    <text>
+	      <h:p>Configuration of area-external networks for
+	      NSSA-LSA translation.</h:p>
+	      <h:p>Hidden networks are not translated to external
+	      LSAs.</h:p>
+	    </text>
+	  </description>
+	  <must condition="../type = 'nssa'">
+	    <error-message>
+	      <value>
+		  'external-networks' is only allowed for NSSA areas.
+	      </value>
+	    </error-message>
+	  </must>
+	  <uses name="ospf-network-list-spec"/>
+	</container>
+	<container name="stub-networks">
+	  <description>
+	    <text>
+	      <h:p>Configuration of stub networks that do not carry
+	      transit traffic between OSPF routers.</h:p>
+	      <h:p>The default behavior is to generate stub records
+	      for all primary network addresses on OSPF interfaces
+	      without an OSPF neighbor, and also for non-primary
+	      addresses on all OSPF interfaces.</h:p>
+	      <h:p>Configured entries are added to the set of stub
+	      networks, or removed if the 'hidden' flag is true. Each
+	      entry also suppresses default stub networks for that
+	      network prefix.</h:p>
+	    </text>
+	  </description>
+	  <uses name="ospf-network-list-spec">
+	    <augment target-node="network">
+	      <leaf name="summary">
+		<description>
+		  <text>
+		    If true, all default stub networks that are
+		    subnetworks of the prefix are also suppressed.
+		  </text>
+		</description>
+		<type name="boolean"/>
+		<default value="false"/>
+	      </leaf>
+	      <leaf name="cost">
+		<description>
+		  <text>
+		    Cost of the stub network prefix.
+		  </text>
+		</description>
+		<type name="ospf-cost"/>
+		<default value="10"/>
+	      </leaf>
+	    </augment>
+	  </uses>
+	</container>
+	<container name="ospf-area-interfaces">
+	  <description>
+	    <text>
+	      Configuration of OSPFv2 interfaces belonging to the area.
+	    </text>
+	  </description>
+	  <must condition="ancestor::routing-protocol/type = 'bird:ospf'">
+	    <error-message>
+	      <value>
+		'ospf-area-interfaces' only allowed for OSPFv2.
+	      </value>
+	    </error-message>
+	  </must>
+	  <list name="interface">
+	    <key value="name"/>
+	    <description>
+	      <text>
+		Each entry assigns an interface to the area and
+		provides additional configuration. 
+	      </text>
+	    </description>
+	    <uses name="if-pars"/>
+	  </list>
+	</container>
+	<container name="ospfv3-area-interfaces">
+	  <description>
+	    <text>
+	      Configuration of OSPFv3 interfaces belonging to the area.
+	    </text>
+	  </description>
+	  <must condition="ancestor::routing-protocol/type = 'bird:ospfv3'">
+	    <error-message>
+	      <value>
+		'ospfv3-area-interfaces' only allowed for OSPFv3.
+	      </value>
+	    </error-message>
+	  </must>
+	  <list name="interface">
+	    <key value="name inst"/>
+	    <description>
+	      <text>
+		<h:p>Each entry assigns an interface to the area and
+		provides additional configuration.</h:p>
+		<h:p>In OSPFv3, multiple instances with different
+		options or even in different areas may be configured
+		for the same interface.</h:p>
+	      </text>
+	    </description>
+	    <uses name="if-pars"/>
+	    <leaf name="inst">
+	      <description>
+		<text>
+		  Unique identifier of an interface instance.
+		</text>
+	      </description>
+	      <type name="uint16"/>
+	    </leaf>
+	  </list>
+	</container>
+	<container name="ospf-virtual-links">
+	  <description>
+	    <text>
+	      Configuration of OSPF v2 virtual links.
+	    </text>
+	  </description>
+	  <must condition="ancestor::routing-protocol/type = 'bird:ospf'">
+	    <error-message>
+	      <value>
+		'ospf-virtual-links' only allowed for OSPFv2.
+	      </value>
+	    </error-message>
+	  </must>
+	  <list name="virtual-link">
+	    <key value="peer-id"/>
+	    <description>
+	      <text>
+		Virtual link parameters.
+	      </text>
+	    </description>
+	    <must condition="not(../../id = 0 or ../../id = '0.0.0.0')">
+	      <error-message>
+		<value>
+		  Virtual link cannot be configured in the backbone area.
+		</value>
+	      </error-message>
+	    </must>
+	    <uses name="vlink-pars"/>
+	  </list>
+	</container>
+	<container name="ospfv3-virtual-links">
+	  <description>
+	    <text>
+	      Configuration of OSPFv3 virtual links.
+	    </text>
+	  </description>
+	  <must condition="ancestor::routing-protocol/type = 'bird:ospfv3'">
+	    <error-message>
+	      <value>
+		'ospfv3-virtual-links' only allowed for OSPFv3.
+	      </value>
+	    </error-message>
+	  </must>
+	  <list name="virtual-link">
+	    <key value="peer-id inst"/>
+	    <description>
+	      <text>
+		<h:p>Virtual link parameters.</h:p>
+		<h:p>In OSPFv3, multiple virtual links may be
+		configured to the same peer.</h:p>
+	      </text>
+	    </description>
+	    <must condition="not(../../id = 0 or ../../id = '0.0.0.0')">
+	      <error-message>
+		<value>
+		  Virtual link cannot be configured in the backbone area.
+		</value>
+	      </error-message>
+	    </must>
+	    <leaf name="inst">
+	      <description>
+		<text>
+		  Unique identifier of a virtual link instance.
+		</text>
+	      </description>
+	      <type name="uint16"/>
+	    </leaf>
+	    <uses name="vlink-pars"/>
+	  </list>
+	</container>
+      </list>
+    </container>
+  </augment>
+</submodule>

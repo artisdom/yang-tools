@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="bird"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:if="urn:ietf:params:xml:ns:yang:ietf-interfaces"
+	xmlns:ip="urn:ietf:params:xml:ns:yang:ietf-ip"
+	xmlns:h="http://www.w3.org/1999/xhtml">
+  <namespace uri="http://www.nic.cz/ns/bird"/>
+  <prefix value="bird"/>
+  <import module="ietf-inet-types">
+    <prefix value="inet"/>
+  </import>
+  <import module="ietf-interfaces">
+    <prefix value="if"/>
+  </import>
+  <import module="ietf-ip">
+    <prefix value="ip"/>
+  </import>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+  <include module="bird-features"/>
+  <include module="bird-nest"/>
+  <include module="bird-kernel"/>
+  <include module="bird-rip"/>
+  <include module="bird-ospf"/>
+  <include module="bird-bgp"/>
+  <organization>
+    <text>CZ.NIC, z. s. p. o.</text>
+  </organization>
+  <contact>
+    <text>
+      Ladislav Lhotka &lt;mailto:lhotka@nic.cz&gt;
+    </text>
+  </contact>
+  <reference>
+    <text>
+      http://bird.network.cz/?get_doc&amp;f=bird.html
+    </text>
+  </reference>
+  <description>
+    <text>
+      <h:p>Configuration of the BIRD Internet Routing Daemon.</h:p>
+    </text>
+  </description>
+
+  <revision date="2012-10-09">
+    <description>
+      <text>Initial revision.</text>
+    </description>
+  </revision>
+
+  <!-- Groupings -->
+
+  <grouping name="primary-address-switch">
+    <leaf name="primary">
+      <type name="boolean"/>
+      <description>
+	<text>
+	  <h:p>Designate an IPv4 address as primary on a given interface.</h:p>
+	  <h:p>This switch is only taken into account if multiple
+	  addresses of the same family are configured.</h:p>
+	</text>
+      </description>
+      <must condition=". = 'false' or
+		       not(../preceding-sibling::ip:address/primary = 'true')">
+	<error-message>
+	  <value>
+	    Only one IP address may be designated as primary.
+	  </value>
+	</error-message>
+      </must>
+      <default value="false"/>
+    </leaf>
+  </grouping>
+
+  <grouping name="universal-route-attributes">
+    <description>
+      <text>Set of universal (protocol-idenpendent) route
+      attributes.</text>
+    </description>
+    <leaf name="filtered">
+      <type name="boolean"/>
+      <description>
+	<text>This flag is used for indicating that the parent route
+	didn't pass the import filter. Depending on the setting of the
+	protocol option 'import-keep-filtered', filtered routes may be
+	discarded or retained but labeled as filtered using this
+	attribute.</text>
+      </description>
+    </leaf>
+  </grouping>
+
+  <!-- RPC methods -->
+
+  <augment target-node="/rt:active-route/rt:output/rt:route">
+    <description>
+      <text>Add universal route attributes.</text>
+    </description>
+    <uses name="universal-route-attributes"/>
+  </augment>
+
+  <rpc name="shutdown">
+    <description>
+      <text>
+	Shut BIRD down.
+      </text>
+    </description>
+    <input>
+      <leaf name="router">
+	<type name="rt:router-ref"/>
+	<description>
+	  <text>The name of the router to be shut down.</text>
+	</description>
+      </leaf>
+    </input>
+  </rpc>
+
+  <rpc name="reload">
+    <description>
+      <text>
+	Reload the specified protocol instance(s). The result of the
+	reload operation is that routes are reimported from the
+	protocol instance and/or active routes are reexported to the
+	protocol instance.
+      </text>
+    </description>
+    <input>
+      <leaf name="router">
+	<type name="rt:router-ref"/>
+	<mandatory value="true"/>
+	<description>
+	  <text>The name of a router instance. The protocol
+	  instances to be reloaded must all reside in this
+	  router.</text>
+	</description>
+      </leaf>
+      <leaf name="direction">
+	<type name="enumeration">
+	  <enum name="in"/>
+	  <enum name="out"/>
+	  <enum name="both"/>
+	</type>
+	<default value="both"/>
+	<description>
+	  <text>
+	    <h:p>Control the direction in which the routes are resent
+	    during the reload:</h:p>
+	    <h:ul>
+	      <h:li>'in': reimport the routes from each protocol
+	      instance to the connected routing table;</h:li>
+	      <h:li>'out': reexport the active routes from the
+	      connected routing table to the protocol instance;</h:li>
+	      <h:li>'both' (default): perform both 'in' and
+	      'out'.</h:li>
+	    </h:ul>
+	  </text>
+	</description>
+      </leaf>
+      <container name="protocol-instances">
+	<presence value="explicit protocol selection"/>
+	<description>
+	  <text>
+	    If this container is present, only the listed protocol
+	    instances are reloaded. Otherwise, all protocol instances
+	    in the router are reloaded.
+	  </text>
+	</description>
+	<leaf-list name="protocol-instance">
+	  <type name="leafref">
+	    <path
+		value="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol/rt:name"/>
+	  </type>
+	  <description>
+	    <text>
+	      The names of the protocols to be reloaded.
+	    </text>
+	  </description>
+	</leaf-list>
+      </container>
+    </input>
+   </rpc>
+
+  <!-- data nodes -->
+
+  <augment target-node="/rt:routing/rt:routing-tables/rt:routing-table/rt:routes/rt:route">
+    <description>
+      <text>Add universal route attributes.</text>
+    </description>
+    <uses name="universal-route-attributes"/>
+  </augment>
+
+  <augment target-node="/if:interfaces/if:interface/ip:ipv4/ip:address">
+    <uses name="primary-address-switch"/>
+  </augment>
+
+  <augment target-node="/if:interfaces/if:interface/ip:ipv6/ip:address">
+    <uses name="primary-address-switch"/>
+  </augment>
+
+  <augment target-node="/rt:routing/rt:router">
+    <container name="bird-config">
+      <description>
+	<text>
+	  Global BIRD configuration parameters.
+	</text>
+      </description>
+      <container name="logging">
+	<description>
+	  <text>Configuration of logging.</text>
+	</description>
+	<list name="log">
+	  <key value="id"/>
+	  <leaf name="id">
+	    <type name="uint8"/>
+	    <description>
+	      <text>Sequential number of a log specification.</text>
+	    </description>
+	  </leaf>
+	  <container name="destination">
+	    <description>
+	      <text>
+		The destination for logs.
+	      </text>
+	    </description>
+	    <choice name="log-dest">
+	      <default value="stderr"/>
+	      <leaf name="stderr">
+		<type name="empty"/>
+	      </leaf>
+	      <leaf name="file">
+		<type name="string"/>
+	      </leaf>
+	      <container name="syslog">
+		<leaf name="host">
+		  <type name="inet:host"/>
+		  <default value="localhost"/>
+		</leaf>
+	      </container>
+	    </choice>
+	  </container>
+	  <container name="log-classes">
+	    <description>
+	      <text>
+		Classes of events to log.
+	      </text>
+	    </description>
+	    <choice name="log-classes-options">
+	      <description>
+		<text>
+		  Select all or none, or an explicit list of event
+		  classes.
+		</text>
+	      </description>
+	      <default value="none"/>
+	      <leaf name="none">
+		<type name="empty"/>
+		<description>
+		  <text>No logging. This is the default.</text>
+		</description>
+	      </leaf>
+	      <leaf name="all">
+		<type name="empty"/>
+		<description>
+		  <text>Log events of all classes.</text>
+		</description>
+	      </leaf>
+	      <leaf-list name="class">
+		<type name="enumeration">
+		  <enum name="info"/>
+		  <enum name="warning"/>
+		  <enum name="error"/>
+		  <enum name="fatal"/>
+		  <enum name="debug"/>
+		  <enum name="trace"/>
+		  <enum name="remote"/>
+		  <enum name="auth"/>
+		  <enum name="bug"/>
+		</type>
+		<description>
+		  <text>
+		    Each entry turns on one class of log messages.
+		  </text>
+		</description>
+	      </leaf-list>
+	    </choice>
+	  </container>
+	</list>
+      </container>
+      <container name="debugging">
+	<description>
+	  <text>Debugging options.</text>
+	</description>
+	<container name="protocols">
+	  <description>
+	    <text>Global protocol debugging options.</text>
+	  </description>
+	  <uses name="protocol-debugging"/>
+	</container>
+	<leaf name="commands">
+	  <type name="enumeration">
+	    <enum name="off">
+	      <description>
+		<text>No debugging.</text>
+	      </description>
+	    </enum>
+	    <enum name="connect">
+	      <description>
+		<text>Client connects and disconnects.</text>
+	      </description>
+	    </enum>
+	    <enum name="all">
+	      <description>
+		<text>All client commands.</text>
+	      </description>
+	    </enum>
+	  </type>
+	  <default value="off"/>
+	  <description>
+	    <text>
+	      This parameter controls the level of debugging
+	      messages regarding client connections.
+	    </text>
+	  </description>
+	</leaf>
+      </container>
+      <container name="mrtdump">
+	<description>
+	  <text>Global MRTdump configuration.</text>
+	</description>
+	<if-feature name="mrtdump"/>
+	<presence value="enable mrtdump"/>
+	<leaf name="file">
+	  <type name="string"/>
+	  <mandatory value="true"/>
+	  <description>
+	    <text>Name of the file for storing MRTdump messages.</text>
+	  </description>
+	</leaf>
+	<container name="global">
+	  <description>
+	    <text>Global MRTdump options.</text>
+	  </description>
+	  <uses name="mrtdump"/>
+	</container>
+      </container>
+      <container name="bgp-listen">
+	<description>
+	  <text>
+	    Configure the listening socket for all BGP
+	    instances.
+	  </text>
+	</description>
+	<!-- TODO -->
+      </container>
+    </container>
+  </augment>
+
+  <augment target-node="/rt:routing/rt:router/rt:interfaces">
+    <description>
+      <text>
+	In BIRD configuration this is the 'device' protocol.
+      </text>
+    </description>
+    <leaf name="scan-time">
+      <type name="uint32"/>
+      <default value="0"/>
+      <description>
+	<text>
+	  <h:p>Interval between consecutive scans of the network
+	  interface list. Value of zero means no scanning.</h:p>
+	  <h:p>On modern systems, notifications about the changes in
+	  the interface status are asynchronous, so normally no
+	  scanning is necessary.</h:p>
+	</text>
+      </description>
+      <units name="seconds"/>
+    </leaf>
+  </augment>
+
+  <augment target-node="/rt:routing/rt:router/rt:interfaces/rt:interface">
+    <description>
+      <text>
+	Configuration of the 'direct' protocol.
+      </text>
+    </description>
+    <leaf name="enable-direct-route">
+      <type name="boolean"/>
+      <default value="true"/>
+      <description>
+	<text>
+	  Enable/disable generation of the direct route for this
+	  logical interface.
+	</text>
+      </description>
+    </leaf>
+  </augment>
+
+  <augment
+      target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">
+    <uses name="common-protocol-data"/>
+  </augment>
+
+</module>
