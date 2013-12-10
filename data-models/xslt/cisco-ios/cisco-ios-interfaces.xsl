@@ -2,10 +2,12 @@
 
 <!-- Program name: cisco-ios-interfaces.xsl
 
-Copyright © 2012 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates NETCONF "get-config" replies to Cisco IOS configuration.
 This stylesheet handles the "ietf-interfaces" YANG module.
+
+==
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -40,8 +42,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <apply-templates select="ip:ipv4"/>
       <apply-templates select="ip:ipv6"/>
       <apply-templates
-	  select="//rt:interface[rt:name = current()/if:name]
-		  /v6ur:ipv6-router-advertisements"/>
+	  select="//rt:routing//rt:interface[rt:name =
+		  current()/if:name]/v6ur:ipv6-router-advertisements"/>
     </if>
     <value-of select="concat('!',$NL)"/>
   </template>

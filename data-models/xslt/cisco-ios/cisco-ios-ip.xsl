@@ -2,12 +2,12 @@
 
 <!-- Program name: cisco-ios-ip.xsl
 
-Copyright © 2011 by Ladislav Lhotka, CESNET <lhotka@cesnet.cz>
-
-Copyright © 2012 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates NETCONF "get-config" replies to Cisco IOS configuration.
 This stylesheet handles the "ietf-routing" YANG module.
+
+==
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

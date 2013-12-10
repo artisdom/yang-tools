@@ -2,10 +2,12 @@
 
 <!-- Program name: cisco-ios-ipv4-unicast-routing.xsl
 
-Copyright © 2012 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates NETCONF "get-config" replies to Cisco IOS configuration.
 This stylesheet handles the "ietf-ipv4-unicast-routing" YANG module.
+
+==
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

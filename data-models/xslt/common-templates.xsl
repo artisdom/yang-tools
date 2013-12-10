@@ -2,7 +2,7 @@
 
 <!-- Program name: common-templates.xsl
 
-Copyright © 2011 by Ladislav Lhotka, CESNET <lhotka@cesnet.cz>
+Copyright © 2013 by Ladislav Lhotka, CESNET <lhotka@cesnet.cz>
 
 Common templates for YANG -> CLI translations.
 
@@ -29,6 +29,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </xsl:template>
 
   <xsl:template name="MOCT">
+    <!-- Octet value corresponding to the length of a bitmask. -->
     <xsl:param name="bits"/>
     <xsl:choose>
       <xsl:when test="number($bits) &lt;= 0">0</xsl:when>
@@ -44,6 +45,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </xsl:template>
 
   <xsl:template name="QMASK">
+    <!-- Netmask in the dotted-quad format. -->
     <xsl:param name="mlen" select="32"/>
     <xsl:call-template name="MOCT">
       <xsl:with-param name="bits" select="$mlen"/>

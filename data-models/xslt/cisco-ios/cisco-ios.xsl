@@ -2,11 +2,13 @@
 
 <!-- Program name: cisco-ios.xsl
 
-Copyright © 2012 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates NETCONF "get-config" replies to Cisco IOS configuration.
 Supported YANG modules: ietf-system, ietf-interfaces, ietf-ip,
 ietf-routing, ietf-ipv4-unicast-routing, ietf-ipv6-unicast-routing.
+
+==
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -55,7 +57,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <include href="cisco-ios-ipv6-unicast-routing.xsl"/>
 
   <template name="sanity-check">
-    <if test="count(//nc:data/rt:routing/rt:router) &gt; 1">
+    <if test="count(//nc:data/rt:routing/rt:routing-instance) &gt; 1">
       <message terminate="yes">
 	<text>ERROR: Multiple logical routers are not supported.</text>
       </message>
@@ -70,13 +72,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <value-of select="concat('!',$NL)"/>
     <value-of select="concat('version ', $ios-version, $NL)"/>
     <value-of select="concat('!',$NL)"/>
-    <apply-templates select="descendant::nc:data"/>
+    <apply-templates select=".//nc:config|.//nc:data"/>
     <value-of select="concat('!',$NL)"/>
     <text>end</text>
     <value-of select="$NL"/>
   </template>
 
-  <template match="nc:data">
+  <template match="nc:config|nc:data">
     <apply-templates select="sys:system/sys:name"/>
     <value-of select="concat('!',$NL)"/>
     <apply-templates select="sys:system/sys:clock"/>
@@ -94,7 +96,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <value-of select="concat('!',$NL)"/>
     <apply-templates select="if:interfaces"/>
     <apply-templates
-	select="rt:routing/rt:router/
+	select="rt:routing/rt:routing-instance/
 		rt:routing-protocols/rt:routing-protocol"/>
     <value-of select="concat('!',$NL)"/>
     <apply-templates select="sys:system/sys:location"/>
