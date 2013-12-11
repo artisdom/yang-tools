@@ -452,6 +452,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		  name="text"
 		  select="normalize-space(.)"/>
 	    </xsl:call-template>
+	    <xsl:value-of select="concat($qchar,';&#xA;')"/>
 	  </xsl:with-param>
 	  <xsl:with-param
 	      name="length"
@@ -461,7 +462,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	</xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:value-of select="concat($qchar,';&#xA;')"/>
   </xsl:template>
 
   <xsl:template match="html:ul">
@@ -471,6 +471,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </xsl:if>
     <xsl:apply-templates select="html:li">
       <xsl:with-param name="prefix" select="$prefix"/>
+      <xsl:with-param name="last" select="position()=last()"/>
     </xsl:apply-templates>
   </xsl:template>
 
@@ -481,6 +482,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </xsl:if>
     <xsl:apply-templates select="html:li" mode="numbered">
       <xsl:with-param name="prefix" select="$prefix"/>
+      <xsl:with-param name="last" select="position()=last()"/>
     </xsl:apply-templates>
   </xsl:template>
 
@@ -491,16 +493,19 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </xsl:if>
     <xsl:apply-templates select="text()|html:br" mode="fill">
       <xsl:with-param name="prefix" select="$prefix"/>
+      <xsl:with-param name="last" select="position()=last()"/>
     </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="text()" mode="fill">
     <xsl:param name="prefix"/>
+    <xsl:param name="last"/>
     <xsl:call-template name="fill-text">
       <xsl:with-param name="text">
 	<xsl:call-template name="escape-text">
 	  <xsl:with-param name="text" select="normalize-space(.)"/>
 	</xsl:call-template>
+	<xsl:if test="$last and position()=last()">";&#xA;</xsl:if>
       </xsl:with-param>
       <xsl:with-param
 	  name="length"
@@ -512,11 +517,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <xsl:template match="html:br" mode="fill">
     <xsl:param name="prefix"/>
+    <xsl:param name="last"/>
     <xsl:value-of select="concat('&#xA;',$prefix)"/>
+    <xsl:if test="$last and position()=last()">";&#xA;</xsl:if>
   </xsl:template>
 
   <xsl:template match="html:li">
     <xsl:param name="prefix"/>
+    <xsl:param name="last"/>
     <xsl:if test="position()>1">
       <xsl:value-of select="concat('&#xA;&#xA;',$prefix)"/>
     </xsl:if>
@@ -528,6 +536,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<xsl:call-template name="escape-text">
 	  <xsl:with-param name="text" select="normalize-space(.)"/>
 	</xsl:call-template>
+	<xsl:if test="$last and position()=last()">";&#xA;</xsl:if>
       </xsl:with-param>
       <xsl:with-param
 	  name="length"
@@ -539,6 +548,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <xsl:template match="html:li" mode="numbered">
     <xsl:param name="prefix"/>
+    <xsl:param name="last"/>
     <xsl:if test="position()>1">
       <xsl:value-of select="concat('&#xA;&#xA;',$prefix)"/>
     </xsl:if>
@@ -549,6 +559,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<xsl:call-template name="escape-text">
 	  <xsl:with-param name="text" select="normalize-space(.)"/>
 	</xsl:call-template>
+	<xsl:if test="$last and position()=last()">";&#xA;</xsl:if>
       </xsl:with-param>
       <xsl:with-param
 	  name="length"
