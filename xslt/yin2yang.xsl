@@ -443,8 +443,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<xsl:apply-templates select="html:p|html:ul|html:ol">
 	  <xsl:with-param name="prefix" select="concat($prf,' ')"/>
 	</xsl:apply-templates>
-	<xsl:value-of
-	    select="concat('&#xA;', $prf,$qchar,';&#xA;')"/>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:call-template name="fill-text">
@@ -454,7 +452,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		  name="text"
 		  select="normalize-space(.)"/>
 	    </xsl:call-template>
-	    <xsl:value-of select="concat($qchar,';&#xA;')"/>
 	  </xsl:with-param>
 	  <xsl:with-param
 	      name="length"
@@ -464,6 +461,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	</xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:value-of select="concat($qchar,';&#xA;')"/>
   </xsl:template>
 
   <xsl:template match="html:ul">
