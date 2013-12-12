@@ -3,6 +3,7 @@
   <capabilities>
     <capability>urn:ietf:params:netconf:base:1.1</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-interfaces?module=ietf-interfaces</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-if-type?module=iana-if-type</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ip?module=ietf-ip</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-system?module=ietf-system&amp;features=authentication,local-users,timezone-location,ntp,radius</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-routing?module=ietf-routing</capability>

@@ -3,33 +3,52 @@
     message-id="101">
   <data>
     <system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
-      <name>my-router</name>
+      <hostname>my-router.example.org</hostname>
       <location>bicycle shed</location>
       <contact>Otto Katz &lt;katz@vatican.va&gt;</contact>
       <clock>
-	<timezone-name>CET</timezone-name>
+	<timezone-location>Europe/Prague</timezone-location>
       </clock>
-      <dns>
-	<server>192.0.2.254</server>
-	<server>2001:db8:0:2:cafe::fe</server>
+      <dns-resolver>
+	<server>
+	  <name>prim</name>
+	  <udp-and-tcp>
+	    <address>192.0.2.254</address>
+	  </udp-and-tcp>
+	</server>
+	<server>
+	  <name>sec</name>
+	  <udp-and-tcp>
+	    <address>2001:db8:0:2:cafe::fe</address>
+	  </udp-and-tcp>
+	</server>
 	<search>ietf.org</search>
-	<search>example.com</search>
+	<search>example.org</search>
 	<options>
 	  <attempts>1</attempts>
 	</options>
-      </dns>
+      </dns-resolver>
       <ntp>
-	<ntp-server>
-	  <address>tik.cesnet.cz</address>
-	</ntp-server>
-	<ntp-server>
-	  <address>tak.cesnet.cz</address>
-	</ntp-server>
+	<server>
+	  <name>tik</name>
+	  <udp>
+	    <address>tik.cesnet.cz</address>
+	  </udp>
+	</server>
+	<server>
+	  <name>tik</name>
+	  <udp>
+	    <address>tik.cesnet.cz</address>
+	  </udp>
+	</server>
       </ntp>
       <radius>
 	<server>
-	  <address>198.51.100.173</address>
-	  <shared-secret>Very$ecret</shared-secret>
+	  <name>radius-server</name>
+	  <udp>
+	    <address>198.51.100.173</address>
+	    <shared-secret>Very$ecret</shared-secret>
+	  </udp>
 	</server>
       </radius>
       <authentication>
@@ -46,21 +65,14 @@
       </authentication>
     </system>
     <interfaces
-	xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+	xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces"
+	xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">
       <interface>
-	<name>Null0</name>
-	<description>
-	  Blackhole pseudo-interface.
-	</description>
-	<type>softwareLoopback</type>
-      </interface>
-      <interface>
-	<name>GigabitEthernet1/1</name>
+	<name>eth0</name>
 	<description>
 	  External interface.
 	</description>
-	<type>ethernetCsmacd</type>
-	<location>1/1</location>
+	<type>ianaift:ethernetCsmacd</type>
 	<ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
 	  <address>
 	    <ip>192.0.2.1</ip>
@@ -72,27 +84,27 @@
 	    <ip>2001:db8:0:1::1</ip>
 	    <prefix-length>64</prefix-length>
 	  </address>
+	  <dup-addr-detect-transmits>3</dup-addr-detect-transmits>
 	  <autoconf>
 	    <create-global-addresses>false</create-global-addresses>
-	    <dup-addr-detect-transmits>3</dup-addr-detect-transmits>
 	  </autoconf>
 	</ipv6>
       </interface>
       <interface>
-	<name>GigabitEthernet1/2</name>
+	<name>eth1</name>
 	<description>
 	  Internal interface.
 	</description>
-	<type>ethernetCsmacd</type>
-	<location>1/2</location>
-	<mtu>8192</mtu>
+	<type>ianaift:ethernetCsmacd</type>
 	<ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+	  <mtu>8192</mtu>
 	  <address>
 	    <ip>198.51.100.1</ip>
 	    <prefix-length>25</prefix-length>
 	  </address>
 	</ipv4>
 	<ipv6 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+	  <mtu>8192</mtu>
 	  <address>
 	    <ip>2001:db8:0:2::1</ip>
 	    <prefix-length>64</prefix-length>
@@ -112,14 +124,14 @@
 	xmlns:rt="urn:ietf:params:xml:ns:yang:ietf-routing"
 	xmlns:v4ur="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing"
 	xmlns:v6ur="urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing">
-      <router>
+      <routing-instance>
 	<name>rtr0</name>
 	<interfaces>
 	  <interface>
-	    <name>GigabitEthernet1/1</name>
+	    <name>eth0</name>
 	  </interface>
 	  <interface>
-	    <name>GigabitEthernet1/2</name>
+	    <name>eth1</name>
 	    <v6ur:ipv6-router-advertisements>
 	      <v6ur:send-advertisements>true</v6ur:send-advertisements>
 	      <v6ur:max-rtr-adv-interval>300</v6ur:max-rtr-adv-interval>
@@ -127,7 +139,6 @@
 	      <v6ur:link-mtu>8192</v6ur:link-mtu>
 	      <v6ur:prefix-list>
 		<v6ur:prefix>
-		  <v6ur:seqno>1</v6ur:seqno>
 		  <v6ur:prefix-spec>2001:db8:0:3::/64</v6ur:prefix-spec>
 		  <v6ur:autonomous-flag>false</v6ur:autonomous-flag>
 		</v6ur:prefix>
@@ -137,10 +148,6 @@
 	</interfaces>
 	<routing-protocols>
 	  <routing-protocol>
-	    <name>direct</name>
-	    <type>rt:direct</type>
-	  </routing-protocol>
-	  <routing-protocol>
 	    <name>st0</name>
 	    <description>
 	      Static routing is used for the internal network.
@@ -149,44 +156,27 @@
 	    <static-routes>
 	      <v4ur:ipv4>
 		<v4ur:route>
-		  <v4ur:seqno>1</v4ur:seqno>
-		  <v4ur:dest-prefix>0.0.0.0/0</v4ur:dest-prefix>
-		  <v4ur:next-hop>192.0.2.2</v4ur:next-hop>
+		  <v4ur:id>1</v4ur:id>
+		  <v4ur:destination-prefix>0.0.0.0/0</v4ur:destination-prefix>
+		  <v4ur:gateway>192.0.2.2</v4ur:gateway>
 		</v4ur:route>
 		<v4ur:route>
-		  <v4ur:seqno>2</v4ur:seqno>
-		  <v4ur:dest-prefix>203.0.113.0/25</v4ur:dest-prefix>
-		  <v4ur:outgoing-interface>Null0</v4ur:outgoing-interface>
+		  <v4ur:id>2</v4ur:id>
+		  <v4ur:destination-prefix>203.0.113.0/25</v4ur:destination-prefix>
+		  <v4ur:special-nexthop>blackhole</v4ur:special-nexthop>
 		</v4ur:route>
 	      </v4ur:ipv4>
 	      <v6ur:ipv6>
 		<v6ur:route>
-		  <v6ur:seqno>1</v6ur:seqno>
-		  <v6ur:dest-prefix>::/0</v6ur:dest-prefix>
-		  <v6ur:next-hop>2001:db8:0:1::2</v6ur:next-hop>
+		  <v6ur:id>1</v6ur:id>
+		  <v6ur:destination-prefix>::/0</v6ur:destination-prefix>
+		  <v6ur:gateway>2001:db8:0:1::2</v6ur:gateway>
 		</v6ur:route>
 	      </v6ur:ipv6>
 	    </static-routes>
-	    <connected-routing-tables>
-	      <routing-table>
-		<name>ipv4-unicast-main</name>
-	      </routing-table>
-	      <routing-table>
-		<name>ipv6-unicast-main</name>
-	      </routing-table>
-	    </connected-routing-tables>
 	  </routing-protocol>
 	</routing-protocols>
-	<routing-tables>
-	  <routing-table>
-	    <name>ipv4-unicast-main</name>
-	  </routing-table>
-	  <routing-table>
-	    <name>ipv6-unicast-main</name>
-	    <address-family>ipV6</address-family>
-	  </routing-table>
-	</routing-tables>
-      </router>
+      </routing-instance>
     </routing>
   </data>
 </rpc-reply>

@@ -1,44 +1,29 @@
 HELLO = hello-server.xml
-HERE = $(shell pwd)
+BIRD = bird4.conf bird6.conf
 TARGET ?= get-config-reply
 BASE ?= test
 SCHEMAS = $(BASE)-$(TARGET).rng $(BASE)-$(TARGET).sch $(BASE)-$(TARGET).dsrl
 INSTANCE = $(BASE)-$(TARGET).xml
 Y2DOPTS = -t $(TARGET) -b $(BASE)
-DSRL2XSL = ../../../pyang/xslt/dsrl2xslt.xsl
-MODULEDIR = ../..
-SSHEET = ../cisco-ios/cisco-ios.xsl
+DSRL2XSL = $(PYANG_XSLT_DIR)/dsrl2xslt.xsl
+BIRD_XSL = ../bird/bird.xsl
 DFLTSHEET = $(BASE)-$(TARGET)-defaults.xsl
 IOS = test-cisco-ios.cfg
 .PHONY: all clean rnc validate
 
-all: $(SCHEMAS) $(IOS)
+all: $(SCHEMAS) $(BIRD) $(BASE)-$(TARGET).rnc
 
-rnc: $(BASE)-$(TARGET).rnc
+%-defaults.xsl: %.dsrl
+	xsltproc --output $@ $(DSRL2XSL) $<
 
-$(IOS): $(DFLTSHEET) $(INSTANCE) ietf-system.yin
-	xsltproc $< $(word 2,$^) | \
-	    xsltproc --output $@ --stringparam system-yin \
-	    $(HERE)/$(word 3,$^) $(SSHEET) -
-
-clean:
-	rm -f $(SCHEMAS) $(IOS) $(DFLTSHEET) ietf-system.yin \
-	    model.* *-gdefs*.rng *.rnc
-
-validate: $(INSTANCE) $(SCHEMAS)
-	yang2dsdl -j -s $(Y2DOPTS) -v $<
+bird%.conf: $(INSTANCE)
+	xsltproc --output $@ --stringparam ip-version $* $(BIRD_XSL) $<
 
 $(SCHEMAS): $(HELLO)
 	yang2dsdl -L $(Y2DOPTS) $(HELLO)
 
-%.rnc: %.rng
-	trang -I rng -O rnc $< $@
- 
-%-defaults.xsl: %.dsrl
-	xsltproc --output $@ $(DSRL2XSL) $<
-
-ietf-system.yin: $(MODULEDIR)/system/ietf-system.yang
-	pyang -f yin -o $@ $<
+validate: $(INSTANCE) $(SCHEMAS)
+	yang2dsdl -j -s $(Y2DOPTS) -v $<
 
 model.dsdl: $(YMODULES)
 	pyang -L -f dsdl --dsdl-no-documentation $(HELLO) \
@@ -47,3 +32,9 @@ model.dsdl: $(YMODULES)
 model.tree: $(YMODULES)
 	pyang -L -f tree -o $@ $(HELLO)
 
+%.rnc: %.rng
+	trang -I rng -O rnc $< $@
+ 
+clean:
+	rm -f $(SCHEMAS) $(BIRD) $(DFLTSHEET) model.*\
+	    *-gdefs*.rng *.rnc
