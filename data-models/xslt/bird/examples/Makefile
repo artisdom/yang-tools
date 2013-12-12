@@ -6,7 +6,7 @@ SCHEMAS = $(BASE)-$(TARGET).rng $(BASE)-$(TARGET).sch $(BASE)-$(TARGET).dsrl
 INSTANCE = $(BASE)-$(TARGET).xml
 Y2DOPTS = -t $(TARGET) -b $(BASE)
 DSRL2XSL = $(PYANG_XSLT_DIR)/dsrl2xslt.xsl
-BIRD_XSL = ../bird/bird.xsl
+BIRD_XSL = ../bird.xsl
 DFLTSHEET = $(BASE)-$(TARGET)-defaults.xsl
 IOS = test-cisco-ios.cfg
 .PHONY: all clean rnc validate
