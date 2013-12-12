@@ -36,9 +36,9 @@
 	  </udp>
 	</server>
 	<server>
-	  <name>tik</name>
+	  <name>tak</name>
 	  <udp>
-	    <address>tik.cesnet.cz</address>
+	    <address>tak.cesnet.cz</address>
 	  </udp>
 	</server>
       </ntp>
@@ -177,6 +177,16 @@
 	  </routing-protocol>
 	</routing-protocols>
       </routing-instance>
+      <route-filters>
+	<route-filter>
+	  <name>allow-all</name>
+	  <type>rt:allow-all-route-filter</type>
+	</route-filter>
+	<route-filter>
+	  <name>deny-all</name>
+	  <type>rt:deny-all-route-filter</type>
+	</route-filter>
+      </route-filters>
     </routing>
   </data>
 </rpc-reply>

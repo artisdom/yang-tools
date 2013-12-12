@@ -36,21 +36,23 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <!-- Address family of the configuration -->
   <param name="ip-version" select="4"/>
   <variable name="address-family"
-	    select="concat('v', $ip-version, 'ur:ipv', $ip-version, '-unicast')"/>
-  <!-- Amount of indentation added for each BIRD hierarchy level. -->
-  <param name="indent-step" select="2"/>
-  <!-- Maximum line length -->
-  <param name="line-length" select="70"/>
+	    select="concat('v', $ip-version, 'ur:ipv', $ip-version,
+		    '-unicast')"/>
+  <!-- Name of the routing instance to process (first enabled entry of
+       the routing-instance list is used by default) -->
+  <param name="inst-name"
+	 select="//nc:*/rt:routing/rt:routing-instance
+		 [rt:enabled='true'][1]/rt:name"/>
 
   <include href="../common-templates.xsl"/>
   <include href="bird-radv.xsl"/>
   <include href="bird-static.xsl"/>
 
   <template name="close-block">
-    <param name="lev" select="0"/>
+    <param name="level" select="0"/>
     <param name="semi"/>
     <call-template name="indent">
-      <with-param name="lev" select="$lev"/>
+      <with-param name="level" select="$level"/>
     </call-template>
     <value-of select="concat('}', $semi, $NL)"/>
   </template>
@@ -76,43 +78,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </choose>
   </template>
 
-  <template name="repeat-string">
-    <!-- Insert `count` number of copies of `string`  -->
-    <param name="count"/>
-    <param name="string"/>
-    <choose>
-      <when test="not($count) or not($string)"/>
-      <when test="$count = 1">
-	<value-of select="$string"/>
-      </when>
-      <otherwise>
-	<if test="$count mod 2">
-	  <value-of select="$string"/>
-	</if>
-	<call-template name="repeat-string">
-	  <with-param name="count" select="floor($count div 2)"/>
-	  <with-param name="string" select="concat($string,$string)"/>
-	</call-template> 
-      </otherwise>
-    </choose>
-  </template>
-
-  <template name="indent">
-    <!-- Insert number of spaces corresponding to indentation at `lev` -->
-    <param name="lev" select="1"/>
-    <call-template name="repeat-string">
-      <with-param name="count" select="$lev * $indent-step"/>
-      <with-param name="string" select="' '"/>
-    </call-template>
-  </template>
-
   <template name="statement">
-    <param name="lev"/>
+    <param name="level"/>
     <param name="kw"/>
     <param name="arg"/>
     <param name="quoted"/>
     <call-template name="indent">
-      <with-param name="lev" select="$lev"/>
+      <with-param name="level" select="$level"/>
     </call-template>
     <value-of select="$kw"/>
     <variable name="quote">
@@ -127,14 +99,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </template>
 
   <template name="stmt-leaf">
-    <param name="lev" select="0"/>
+    <param name="level" select="0"/>
     <param name="kw"/>
     <param name="arg" select="."/>
     <param name="quoted" select="0"/>
     <param name="dflt">__NO_DEFAULT__</param>
     <if test="$arg != $dflt">
       <call-template name="statement">
-	<with-param name="lev" select="$lev"/>
+	<with-param name="level" select="$level"/>
 	<with-param name="kw" select="$kw"/>
 	<with-param name="arg" select="$arg"/>
 	<with-param name="quoted" select="$quoted"/>
@@ -144,12 +116,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </template>
 
   <template name="stmt-block">
-    <param name="lev" select="0"/>
+    <param name="level" select="0"/>
     <param name="kw"/>
     <param name="arg"/>
     <param name="quoted" select="0"/>
     <call-template name="statement">
-      <with-param name="lev" select="$lev"/>
+      <with-param name="level" select="$level"/>
       <with-param name="kw" select="$kw"/>
       <with-param name="arg" select="$arg"/>
       <with-param name="quoted" select="$quoted"/>
@@ -158,11 +130,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </template>
 
   <template name="switch">
-    <param name="lev" select="1"/>
+    <param name="level" select="1"/>
     <param name="kw"/>
     <param name="dflt">yes</param>
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="$lev"/>
+      <with-param name="level" select="$level"/>
       <with-param name="kw" select="$kw"/>
       <with-param name="arg">
 	<call-template name="yes-no">
@@ -173,46 +145,33 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </call-template>
   </template>
 
-  <template name="arg-check">
-    <if test="$ip-version != 4 and $ip-version != 6">
-      <message terminate="yes">
-	<text>Bad 'ip-version' parameter: </text>
-	<value-of select="$ip-version"/>
-      </message>
-    </if>
-  </template>
-
   <template name="common-protocol-pars">
     <apply-templates
 	select="rt:description|rt:enabled|
 		rt:connected-ribs/rt:connected-rib"/>
   </template>
 
+  <template name="process-instance">
+    <param name="inst"/>
+  </template>
+
   <!-- Root element -->
 
   <template match="/">
-    <call-template name="arg-check"/>
+    <value-of select="concat('§',$inst-name,'§&#xA;')"/>
+    <if test="$ip-version != 4 and $ip-version != 6">
+      <message terminate="yes">
+	<text>Bad 'ip-version' parameter: </text>
+	<value-of select="$ip-version"/>
+      </message>
+    </if>
     <apply-templates select="//nc:*/rt:routing"/>
   </template>
 
   <template match="rt:routing">
-    <variable name="rtr"
-	      select="rt:routing-instance[rt:enabled = 'true' and
-		      rt:default-ribs/rt:default-rib
-		      [rt:address-family = $address-family]]"/>
-    <if test="count($rtr) = 0">
-      <message terminate="yes">
-	<value-of
-	    select="concat('No enabled routing instance found for IP version ',
-		    $ip-version)"/>
-      </message>
-    </if>
-    <if test="count($rtr) > 1">
-      <message terminate="no">
-	<value-of
-	    select="concat('Multiple routing instances found, using &quot;',
-		    $rtr[1]/rt:name, '&quot;')"/>
-      </message>
+    <variable name="inst" select="rt:routing-instance[rt:name=$inst-name]"/>
+    <if test="count($inst) = 0">
+      <message terminate="yes">No routing instance found.</message>
     </if>
     <text>/*
  *        Configuration for IPv</text>
@@ -223,10 +182,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 </text>
     <apply-templates
-	select="rt:ribs/rt:rib[rt:name !=
-		$rtr[1]/rt:default-ribs/rt:default-rib
-		[rt:address-family = $address-family]/rt:name]"/>
-    <apply-templates select="$rtr[1]"/>
+	select="rt:ribs/rt:rib[rt:address-family = $address-family]"/>
+    <apply-templates select="$inst"/>
     <apply-templates select="rt:route-filters/rt:route-filter"/>
   </template>
 
@@ -255,7 +212,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <with-param name="arg">direct</with-param>
     </call-template>
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">interface</with-param>
       <with-param name="arg">
 	<for-each select="rt:interface">
@@ -283,16 +240,31 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <!-- Common protocol parameters -->
 
   <template match="rt:description">
-    <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
-      <with-param name="kw">description</with-param>
-      <with-param name="quoted" select="1"/>
+    <call-template name="indent"/>
+    <text>description&#xA;</text>
+    <variable name="qchar">"</variable>
+    <variable name="prf">
+      <call-template name="indent">
+	<with-param name="level" select="2"/>
+      </call-template>
+    </variable>
+    <value-of select="concat($prf,$qchar)"/>
+    <call-template name="fill-text">
+      <with-param name="text">
+	<value-of select="normalize-space(.)"/>
+	<value-of select="concat($qchar,';&#xA;')"/>
+      </with-param>
+      <with-param
+	  name="length"
+	  select="$line-length - string-length($prf) - 1"/>
+      <with-param name="prefix" select="concat($prf,' ')"/>
+      <with-param name="at-start" select="true()"/>
     </call-template>
   </template>
 
   <template match="rt:enabled">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">disabled</with-param>
       <with-param name="arg">
 	<choose>
@@ -310,7 +282,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		      rt:rib[rt:name = current()/rt:name]"/>
     <if test="$rtbl/rt:address-family = $address-family">
       <call-template name="stmt-leaf">
-	<with-param name="lev" select="1"/>
+	<with-param name="level" select="1"/>
 	<with-param name="kw">table</with-param>
 	<with-param name="arg" select="rt:name"/>
 	<with-param
@@ -324,7 +296,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="rt:import-filter">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">import filter</with-param>
     </call-template>
   </template>
@@ -341,7 +313,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <template
       match="rt:route-filter/rt:type[. = 'rt:allow-all-route-filter']">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">accept</with-param>
       <with-param name="arg">allow all</with-param>
       <with-param name="quoted" select="1"/>
@@ -351,7 +323,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <template
       match="rt:route-filter/rt:type[. = 'rt:deny-all-route-filter']">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">reject</with-param>
       <with-param name="arg">deny all</with-param>
       <with-param name="quoted" select="1"/>

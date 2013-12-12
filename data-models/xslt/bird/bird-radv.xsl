@@ -30,14 +30,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="rt:interface" mode="radv">
     <call-template name="stmt-block">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw">interface</with-param>
       <with-param name="arg" select="key('if-location', rt:name)"/>
       <with-param name="quoted" select="1"/>
     </call-template>
     <apply-templates select="v6ur:ipv6-router-advertisements"/>
     <call-template name="close-block">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
     </call-template>
     <call-template name="close-block"/>
   </template>
@@ -48,7 +48,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		v6ur:other-config-flag|v6ur:link-mtu|v6ur:reachable-time|
 		v6ur:retrans-timer|v6ur:cur-hop-limit"/>
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">min ra interval</with-param>
       <with-param name="arg">
 	<call-template name="value-or-default">
@@ -69,7 +69,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <with-param name="dflt" select="0.33 * v6ur:max-rtr-adv-interval"/>
     </call-template>
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">default lifetime</with-param>
       <with-param name="arg">
 	<call-template name="value-or-default">
@@ -84,7 +84,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:max-rtr-adv-interval">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">max ra interval</with-param>
       <with-param name="dflt" select="600"/>
     </call-template>
@@ -92,7 +92,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:managed-flag">
     <call-template name="switch">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">managed</with-param>
       <with-param name="dflt">no</with-param>
     </call-template>
@@ -100,7 +100,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:other-config-flag">
     <call-template name="switch">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">other config</with-param>
       <with-param name="dflt">no</with-param>
     </call-template>
@@ -108,7 +108,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:link-mtu">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">link mtu</with-param>
       <with-param name="dflt" select="0"/>
     </call-template>
@@ -116,7 +116,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:reachable-time">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">reachable time</with-param>
       <with-param name="dflt" select="0"/>
     </call-template>
@@ -124,7 +124,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:retrans-timer">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">retrans timer</with-param>
       <with-param name="dflt" select="0"/>
     </call-template>
@@ -132,7 +132,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:cur-hop-limit">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">current hop limit</with-param>
       <with-param name="dflt" select="64"/>
     </call-template>
@@ -140,7 +140,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:ipv6-router-advertisements/v6ur:prefix-list/v6ur:prefix">
     <call-template name="stmt-block">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">prefix</with-param>
       <with-param name="arg" select="v6ur:prefix-spec"/>
     </call-template>
@@ -148,13 +148,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	select="v6ur:no-advertise|v6ur:valid-lifetime|v6ur:on-link-flag|
 		v6ur:preferred-lifetime|v6ur:autonomous-flag"/>
     <call-template name="close-block">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
     </call-template>
   </template>
 
   <template match="v6ur:no-advertise">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="3"/>
+      <with-param name="level" select="3"/>
       <with-param name="kw">skip</with-param>
       <with-param name="arg"/>
     </call-template>
@@ -162,7 +162,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:valid-lifetime">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="3"/>
+      <with-param name="level" select="3"/>
       <with-param name="kw">valid lifetime</with-param>
       <with-param name="dflt" select="86400"/>
     </call-template>
@@ -170,21 +170,21 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v6ur:on-link-flag">
     <call-template name="switch">
-      <with-param name="lev" select="3"/>
+      <with-param name="level" select="3"/>
       <with-param name="kw">onlink</with-param>
     </call-template>
   </template>
 
   <template match="v6ur:autonomous-flag">
     <call-template name="switch">
-      <with-param name="lev" select="3"/>
+      <with-param name="level" select="3"/>
       <with-param name="kw">autonomous</with-param>
     </call-template>
   </template>
 
   <template match="v6ur:preferred-lifetime">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="3"/>
+      <with-param name="level" select="3"/>
       <with-param name="kw">preferred lifetime</with-param>
       <with-param name="dflt" select="14400"/>
     </call-template>

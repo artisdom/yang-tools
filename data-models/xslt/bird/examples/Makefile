@@ -16,8 +16,9 @@ all: $(SCHEMAS) $(BIRD) $(BASE)-$(TARGET).rnc
 %-defaults.xsl: %.dsrl
 	xsltproc --output $@ $(DSRL2XSL) $<
 
-bird%.conf: $(INSTANCE)
-	xsltproc --output $@ --stringparam ip-version $* $(BIRD_XSL) $<
+bird%.conf: $(INSTANCE) $(DFLTSHEET)
+	xsltproc $(DFLTSHEET) $< | \
+	    xsltproc --output $@ --stringparam ip-version $* $(BIRD_XSL) -
 
 $(SCHEMAS): $(HELLO)
 	yang2dsdl -L $(Y2DOPTS) $(HELLO)

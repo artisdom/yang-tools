@@ -52,50 +52,28 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="v4ur:route">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw"
-		  select="concat('route ', v4ur:dest-prefix)"/>
+		  select="concat('route ', v4ur:destination-prefix)"/>
       <with-param name="arg">
 	<apply-templates
 	    select="v4ur:special-nexthop|v4ur:outgoing-interface|
 		    v4ur:gateway[not(../v4ur:outgoing-interface)]|
 		    v4ur:nexthop"/>
-	<choose>
-	  <when test="v4ur:next-hop">
-	    <value-of select="concat('via ', v4ur:next-hop)"/>
-	  </when>
-	  <when test="v4ur:outgoing-interface">
-	    <value-of
-		select="concat('via &quot;',
-			v4ur:outgoing-interface, '&quot;')"/>
-	  </when>
-	  <otherwise>prohibit</otherwise>
-	</choose>
       </with-param>
     </call-template>
   </template>
 
   <template match="v6ur:route">
     <call-template name="stmt-leaf">
-      <with-param name="lev" select="1"/>
+      <with-param name="level" select="1"/>
       <with-param name="kw"
-		  select="concat('route ', v6ur:dest-prefix)"/>
+		  select="concat('route ', v6ur:destination-prefix)"/>
       <with-param name="arg">
 	<apply-templates
 	    select="v6ur:special-nexthop|v6ur:outgoing-interface|
 		    v6ur:gateway[not(../v6ur:outgoing-interface)]|
 		    v6ur:nexthop"/>
-	<choose>
-	  <when test="v6ur:next-hop">
-	    <value-of select="concat('via ', v6ur:next-hop)"/>
-	  </when>
-	  <when test="v6ur:outgoing-interface">
-	    <value-of
-		select="concat('via &quot;',
-			v6ur:outgoing-interface, '&quot;')"/>
-	  </when>
-	  <otherwise>prohibit</otherwise>
-	</choose>
       </with-param>
     </call-template>
   </template>
@@ -137,7 +115,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <template
       match="v4ur:nexthop/v4ur:address|v6ur:nexthop/v6ur:address">
     <call-template name="statement">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">via</with-param>
       <with-param name="arg" select="value-of(.)"/>
       <with-param name="quoted" select="0"/>
@@ -148,7 +126,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       match="v4ur:nexthop/v4ur:outgoing-interface|
 	     v6ur:nexthop/v6ur:outgoing-interface">
     <call-template name="statement">
-      <with-param name="lev" select="2"/>
+      <with-param name="level" select="2"/>
       <with-param name="kw">via</with-param>
       <with-param name="arg" select="value-of(.)"/>
       <with-param name="quoted" select="1"/>
