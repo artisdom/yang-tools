@@ -10,16 +10,30 @@
     <prefix value="rt"/>
   </import>
   <include module="bird-nest"/>
-  <include module="bird-features"/>
+
   <description>
     <text>
       Configuration of the BIRD 'kernel' pseudo-protocol.
     </text>
   </description>
 
+  <!-- Features -->
+
+  <feature name="multiple-kernel-tables">
+    <description>
+      <text>
+	Indicates availability of multiple kernel routing tables.
+      </text>
+    </description>
+  </feature>
+
+  <!-- Identities -->
+
   <identity name="kernel">
     <base name="rt:routing-protocol"/>
   </identity>
+
+  <!-- Data nodes -->
 
   <augment
       target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">

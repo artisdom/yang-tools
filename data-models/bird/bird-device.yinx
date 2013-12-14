@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submodule name="bird-device"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml">
+  <belongs-to module="bird">
+    <prefix value="bird"/>
+  </belongs-to>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+  <import module="ietf-interfaces">
+    <prefix value="if"/>
+  </import>
+
+  <description>
+    <text>
+      Configuration of the BIRD 'device' pseudo-protocol.
+    </text>
+  </description>
+
+  <!-- Groupings -->
+
+  <grouping name="primary-address-switch">
+    <leaf name="primary">
+      <type name="boolean"/>
+      <description>
+	<text>
+	  <h:p>Designate an IPv4 address as primary on a given interface.</h:p>
+	  <h:p>This switch is only taken into account if multiple
+	  addresses of the same family are configured.</h:p>
+	</text>
+      </description>
+      <must condition=". = 'false' or
+		       not(../preceding-sibling::ip:address/primary = 'true')">
+	<error-message>
+	  <value>
+	    Only one IP address may be designated as primary.
+	  </value>
+	</error-message>
+      </must>
+      <default value="false"/>
+    </leaf>
+  </grouping>
+
+  <!-- Data nodes -->
+
+  <augment target-node="/rt:routing/rt:routing-instance/rt:interfaces">
+    <leaf name="scan-time">
+      <type name="uint32"/>
+      <default value="0"/>
+      <description>
+	<text>
+	  <h:p>Interval between consecutive scans of the network
+	  interface list. Value of zero means no scanning.</h:p>
+	  <h:p>On modern systems, notifications about the changes in
+	  the interface status are asynchronous, so normally no
+	  scanning is necessary.</h:p>
+	</text>
+      </description>
+      <units name="seconds"/>
+    </leaf>
+  </augment>
+
+  <augment target-node="/if:interfaces/if:interface/ip:ipv4/ip:address">
+    <uses name="primary-address-switch"/>
+  </augment>
+
+  <augment target-node="/if:interfaces/if:interface/ip:ipv6/ip:address">
+    <uses name="primary-address-switch"/>
+  </augment>
+
+</submodule>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submodule name="bird-global"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml">
+  <belongs-to module="bird">
+    <prefix value="bird"/>
+  </belongs-to>
+  <import module="ietf-inet-types">
+    <prefix value="inet"/>
+  </import>
+  <import module="ietf-routing">
+    <prefix value="rt"/>
+  </import>
+
+  <description>
+    <text>
+      Global BIRD Configuration.
+    </text>
+  </description>
+
+  <!-- Data Nodes -->
+
+  <augment target-node="/rt:routing/rt:routing-instance">
+    <container name="bird-config">
+      <description>
+	<text>
+	  Global BIRD configuration parameters.
+	</text>
+      </description>
+      <leaf name="address-family">
+	<type name="identityref">
+	  <base name="rt:address-family"/>
+	</type>
+	<default value="rt:ipv4"/>
+	<description>
+	  <text>
+	    <h:p>Address family of the router instance.</h:p>
+	    <h:p>BIRD routing daemon supports only one address family
+	    at a time. Address family is a compile-time parameter.</h:p>
+	  </text>
+	</description>
+      </leaf>
+      <container name="logging">
+	<description>
+	  <text>Configuration of logging.</text>
+	</description>
+	<list name="log">
+	  <key value="id"/>
+	  <leaf name="id">
+	    <type name="uint8"/>
+	    <description>
+	      <text>Sequential number of a log specification.</text>
+	    </description>
+	  </leaf>
+	  <container name="destination">
+	    <description>
+	      <text>
+		The destination for logs.
+	      </text>
+	    </description>
+	    <choice name="log-dest">
+	      <default value="stderr"/>
+	      <leaf name="stderr">
+		<type name="empty"/>
+	      </leaf>
+	      <leaf name="file">
+		<type name="string"/>
+	      </leaf>
+	      <container name="syslog">
+		<leaf name="host">
+		  <type name="inet:host"/>
+		  <default value="localhost"/>
+		</leaf>
+	      </container>
+	    </choice>
+	  </container>
+	  <container name="log-classes">
+	    <description>
+	      <text>
+		Classes of events to log.
+	      </text>
+	    </description>
+	    <choice name="log-classes-options">
+	      <description>
+		<text>
+		  Select all or none, or an explicit list of event
+		  classes.
+		</text>
+	      </description>
+	      <default value="none"/>
+	      <leaf name="none">
+		<type name="empty"/>
+		<description>
+		  <text>No logging. This is the default.</text>
+		</description>
+	      </leaf>
+	      <leaf name="all">
+		<type name="empty"/>
+		<description>
+		  <text>Log events of all classes.</text>
+		</description>
+	      </leaf>
+	      <leaf-list name="class">
+		<type name="enumeration">
+		  <enum name="info"/>
+		  <enum name="warning"/>
+		  <enum name="error"/>
+		  <enum name="fatal"/>
+		  <enum name="debug"/>
+		  <enum name="trace"/>
+		  <enum name="remote"/>
+		  <enum name="auth"/>
+		  <enum name="bug"/>
+		</type>
+		<description>
+		  <text>
+		    Each entry turns on one class of log messages.
+		  </text>
+		</description>
+	      </leaf-list>
+	    </choice>
+	  </container>
+	</list>
+      </container>
+      <container name="debugging">
+	<description>
+	  <text>Debugging options.</text>
+	</description>
+	<leaf name="commands">
+	  <type name="enumeration">
+	    <enum name="off">
+	      <description>
+		<text>No debugging.</text>
+	      </description>
+	    </enum>
+	    <enum name="connect">
+	      <description>
+		<text>Client connects and disconnects.</text>
+	      </description>
+	    </enum>
+	    <enum name="all">
+	      <description>
+		<text>All client commands.</text>
+	      </description>
+	    </enum>
+	  </type>
+	  <default value="off"/>
+	  <description>
+	    <text>
+	      This parameter controls the level of debugging
+	      messages regarding client connections.
+	    </text>
+	  </description>
+	</leaf>
+      </container>
+    </container>
+  </augment>
+
+</submodule>
