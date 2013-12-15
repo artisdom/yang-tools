@@ -42,7 +42,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
        the routing-instance list is used by default) -->
   <param name="inst-name"
 	 select="//nc:*/rt:routing/rt:routing-instance
-		 [rt:enabled='true'][1]/rt:name"/>
+		 [rt:type=concat('bird:bird-ipv',$ip-version)][1]/rt:name"/>
 
   <include href="../common-templates.xsl"/>
   <include href="bird-radv.xsl"/>
@@ -171,7 +171,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <template match="rt:routing">
     <variable name="inst" select="rt:routing-instance[rt:name=$inst-name]"/>
     <if test="count($inst) = 0">
-      <message terminate="yes">No routing instance found.</message>
+      <message terminate="yes">
+	<value-of
+	    select="concat('No IPv', $ip-version, ' routing instance found.')"/>
+      </message>
     </if>
     <text>/*
  *        Configuration for IPv</text>

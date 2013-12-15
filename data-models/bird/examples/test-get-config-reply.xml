@@ -123,9 +123,43 @@
 	xmlns="urn:ietf:params:xml:ns:yang:ietf-routing"
 	xmlns:rt="urn:ietf:params:xml:ns:yang:ietf-routing"
 	xmlns:v4ur="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing"
-	xmlns:v6ur="urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing">
+	xmlns:v6ur="urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing"
+	xmlns:bird="http://www.nic.cz/ns/bird">
       <routing-instance>
-	<name>rtr0</name>
+	<name>rtr4</name>
+	<type>bird:bird-ipv4</type>
+	<interfaces>
+	  <interface>
+	    <name>eth0</name>
+	  </interface>
+	  <interface>
+	    <name>eth1</name>
+	  </interface>
+	</interfaces>
+	<routing-protocols>
+	  <routing-protocol>
+	    <name>st4</name>
+	    <type>rt:static</type>
+	    <static-routes>
+	      <v4ur:ipv4>
+		<v4ur:route>
+		  <v4ur:id>1</v4ur:id>
+		  <v4ur:destination-prefix>0.0.0.0/0</v4ur:destination-prefix>
+		  <v4ur:gateway>192.0.2.2</v4ur:gateway>
+		</v4ur:route>
+		<v4ur:route>
+		  <v4ur:id>2</v4ur:id>
+		  <v4ur:destination-prefix>203.0.113.0/25</v4ur:destination-prefix>
+		  <v4ur:special-nexthop>blackhole</v4ur:special-nexthop>
+		</v4ur:route>
+	      </v4ur:ipv4>
+	    </static-routes>
+	  </routing-protocol>
+	</routing-protocols>
+      </routing-instance>
+      <routing-instance>
+	<name>rtr6</name>
+	<type>bird:bird-ipv6</type>
 	<interfaces>
 	  <interface>
 	    <name>eth0</name>
@@ -148,24 +182,9 @@
 	</interfaces>
 	<routing-protocols>
 	  <routing-protocol>
-	    <name>st0</name>
-	    <description>
-	      Static routing is used for the internal network.
-	    </description>
+	    <name>st6</name>
 	    <type>rt:static</type>
 	    <static-routes>
-	      <v4ur:ipv4>
-		<v4ur:route>
-		  <v4ur:id>1</v4ur:id>
-		  <v4ur:destination-prefix>0.0.0.0/0</v4ur:destination-prefix>
-		  <v4ur:gateway>192.0.2.2</v4ur:gateway>
-		</v4ur:route>
-		<v4ur:route>
-		  <v4ur:id>2</v4ur:id>
-		  <v4ur:destination-prefix>203.0.113.0/25</v4ur:destination-prefix>
-		  <v4ur:special-nexthop>blackhole</v4ur:special-nexthop>
-		</v4ur:route>
-	      </v4ur:ipv4>
 	      <v6ur:ipv6>
 		<v6ur:route>
 		  <v6ur:id>1</v6ur:id>

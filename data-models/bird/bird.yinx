@@ -42,7 +42,33 @@
     </description>
   </revision>
 
-  <!-- RPC methods -->
+  <!-- Identities -->
+
+  <identity name="bird-daemon">
+    <base name="rt:standard-routing-instance"/>
+  </identity>
+
+  <identity name="bird-ipv4">
+    <base name="bird-daemon"/>
+    <description>
+      <text>
+	This identity represents BIRD routing daemon compiled with
+	support for IPv4 routing.
+      </text>
+    </description>
+  </identity>
+
+  <identity name="bird-ipv6">
+    <base name="bird-daemon"/>
+    <description>
+      <text>
+	This identity represents BIRD routing daemon compiled with
+	support for IPv6 routing.
+      </text>
+    </description>
+  </identity>
+
+  <!-- RPC Methods -->
 
   <rpc name="shutdown">
     <description>

@@ -27,19 +27,6 @@
 	  Global BIRD configuration parameters.
 	</text>
       </description>
-      <leaf name="address-family">
-	<type name="identityref">
-	  <base name="rt:address-family"/>
-	</type>
-	<default value="rt:ipv4"/>
-	<description>
-	  <text>
-	    <h:p>Address family of the router instance.</h:p>
-	    <h:p>BIRD routing daemon supports only one address family
-	    at a time. Address family is a compile-time parameter.</h:p>
-	  </text>
-	</description>
-      </leaf>
       <container name="logging">
 	<description>
 	  <text>Configuration of logging.</text>
