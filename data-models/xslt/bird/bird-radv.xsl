@@ -32,7 +32,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <call-template name="stmt-block">
       <with-param name="level" select="1"/>
       <with-param name="kw">interface</with-param>
-      <with-param name="arg" select="key('if-location', rt:name)"/>
+      <with-param name="arg" select="rt:name"/>
       <with-param name="quoted" select="1"/>
     </call-template>
     <apply-templates select="v6ur:ipv6-router-advertisements"/>
