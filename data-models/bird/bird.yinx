@@ -10,6 +10,7 @@
     <prefix value="rt"/>
   </import>
   <include module="bird-global"/>
+  <include module="bird-device"/>
   <!--
   <include module="bird-nest"/>
   <include module="bird-kernel"/>

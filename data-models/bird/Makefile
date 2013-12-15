@@ -1,4 +1,4 @@
-SUBMOD = bird-global # bird-nest bird-features bird-kernel bird-rip bird-ospf
+SUBMOD = bird-global bird-device # bird-nest bird-features bird-kernel bird-rip bird-ospf
 ALL = bird.yang $(addsuffix .yang, $(SUBMOD)) 
 Y2YXSL = ../../xslt/yin2yang.xsl
 XSLPARS = --stringparam date $(shell date +%F)

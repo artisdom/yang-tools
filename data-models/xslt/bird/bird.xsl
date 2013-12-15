@@ -47,6 +47,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <include href="../common-templates.xsl"/>
   <include href="bird-radv.xsl"/>
   <include href="bird-static.xsl"/>
+  <include href="bird-device.xsl"/>
 
   <template name="close-block">
     <param name="level" select="0"/>
@@ -199,6 +200,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="rt:routing-instance">
     <apply-templates select="rt:router-id"/>
+    <apply-templates select="rt:interfaces" mode="device"/>
     <apply-templates select="rt:interfaces"/>
     <apply-templates select="rt:routing-protocols/rt:routing-protocol"/>
   </template>

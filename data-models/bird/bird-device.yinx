@@ -11,6 +11,9 @@
   <import module="ietf-interfaces">
     <prefix value="if"/>
   </import>
+  <import module="ietf-ip">
+    <prefix value="ip"/>
+  </import>
 
   <description>
     <text>
@@ -34,7 +37,7 @@
 		       not(../preceding-sibling::ip:address/primary = 'true')">
 	<error-message>
 	  <value>
-	    Only one IP address may be designated as primary.
+	    Only one IP address per interface may be designated as primary.
 	  </value>
 	</error-message>
       </must>

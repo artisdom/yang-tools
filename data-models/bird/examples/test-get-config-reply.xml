@@ -1,7 +1,7 @@
 <rpc-reply
     xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
     message-id="101">
-  <data>
+  <data xmlns:bird="http://www.nic.cz/ns/bird">
     <system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
       <hostname>my-router.example.org</hostname>
       <location>bicycle shed</location>
@@ -112,6 +112,7 @@
 	  <address>
 	    <ip>2001:db8:0:3::f00</ip>
 	    <prefix-length>64</prefix-length>
+	    <bird:primary>true</bird:primary>
 	  </address>
 	  <autoconf>
 	    <create-global-addresses>false</create-global-addresses>
@@ -123,12 +124,12 @@
 	xmlns="urn:ietf:params:xml:ns:yang:ietf-routing"
 	xmlns:rt="urn:ietf:params:xml:ns:yang:ietf-routing"
 	xmlns:v4ur="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing"
-	xmlns:v6ur="urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing"
-	xmlns:bird="http://www.nic.cz/ns/bird">
+	xmlns:v6ur="urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing">
       <routing-instance>
 	<name>rtr4</name>
 	<type>bird:bird-ipv4</type>
 	<interfaces>
+	  <bird:scan-time>10</bird:scan-time>
 	  <interface>
 	    <name>eth0</name>
 	  </interface>
@@ -161,6 +162,7 @@
 	<name>rtr6</name>
 	<type>bird:bird-ipv6</type>
 	<interfaces>
+	  <bird:scan-time>10</bird:scan-time>
 	  <interface>
 	    <name>eth0</name>
 	  </interface>

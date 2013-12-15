@@ -1,7 +1,7 @@
 HELLO = hello-server.xml
 CONFFILES = bird4.conf bird6.conf
-SUBMODS =
-YMODS = ../bird.yang $(addprefix ../,$(addsuffix .yang,$(SUBMOD)))
+SUBMOD = device
+YMODS = ../bird.yang $(addprefix ../bird-,$(addsuffix .yang,$(SUBMOD)))
 TARGET ?= get-config-reply
 BASE ?= test
 SCHEMAS = $(BASE)-$(TARGET).rng $(BASE)-$(TARGET).sch $(BASE)-$(TARGET).dsrl
