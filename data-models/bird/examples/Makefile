@@ -12,7 +12,7 @@ BIRD_XSL = ../../xslt/bird/bird.xsl
 DFLTSHEET = $(BASE)-$(TARGET)-defaults.xsl
 .PHONY: all clean rnc validate
 
-all: $(SCHEMAS) $(CONFFILES) $(BASE)-$(TARGET).rnc
+all: $(SCHEMAS) $(CONFFILES) $(BASE)-$(TARGET).rnc model.tree
 
 %-defaults.xsl: %.dsrl
 	xsltproc --output $@ $(DSRL2XSL) $<

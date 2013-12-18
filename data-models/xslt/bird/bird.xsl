@@ -38,16 +38,22 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <variable name="address-family"
 	    select="concat('v', $ip-version, 'ur:ipv', $ip-version,
 		    '-unicast')"/>
+  <variable name="root" select="//nc:*/rt:routing"/>
   <!-- Name of the routing instance to process (first enabled entry of
        the routing-instance list is used by default) -->
   <param name="inst-name"
-	 select="//nc:*/rt:routing/rt:routing-instance
+	 select="$root/rt:routing-instance
 		 [rt:type=concat('bird:bird-ipv',$ip-version)][1]/rt:name"/>
+  <variable
+      name="default-rib"
+      select="$root/rt:routing-instance[rt:name=$inst-name]/rt:default-ribs
+	      /rt:default-rib[rt:address-family=$address-family]"/>
 
   <include href="../common-templates.xsl"/>
   <include href="bird-radv.xsl"/>
   <include href="bird-static.xsl"/>
   <include href="bird-device.xsl"/>
+  <include href="bird-pipe.xsl"/>
 
   <template name="close-block">
     <param name="level" select="0"/>
@@ -159,14 +165,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <!-- Root element -->
 
   <template match="/">
-    <value-of select="concat('§',$inst-name,'§&#xA;')"/>
     <if test="$ip-version != 4 and $ip-version != 6">
       <message terminate="yes">
 	<text>Bad 'ip-version' parameter: </text>
 	<value-of select="$ip-version"/>
       </message>
     </if>
-    <apply-templates select="//nc:*/rt:routing"/>
+    <apply-templates select="$root"/>
   </template>
 
   <template match="rt:routing">
@@ -187,6 +192,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </text>
     <apply-templates
 	select="rt:ribs/rt:rib[rt:address-family = $address-family]"/>
+    <apply-templates
+	select="rt:ribs/rt:rib[rt:address-family = $address-family]"
+	mode="pipe"/>
     <apply-templates select="$inst"/>
     <apply-templates select="rt:route-filters/rt:route-filter"/>
   </template>
@@ -283,17 +291,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <template match="rt:connected-rib">
     <variable name="rtbl"
-	      select="//nc:*/rt:routing/rt:ribs/
-		      rt:rib[rt:name = current()/rt:name]"/>
+	      select="$root/rt:ribs/
+		      rt:rib[rt:name = current()/rt:rib-name]"/>
     <if test="$rtbl/rt:address-family = $address-family">
       <call-template name="stmt-leaf">
 	<with-param name="level" select="1"/>
 	<with-param name="kw">table</with-param>
-	<with-param name="arg" select="rt:name"/>
-	<with-param
-	    name="dflt"
-	    select="../../../../rt:default-ribs/rt:default-rib[
-		    rt:address-family = $address-family]/rt:name"/>
+	<with-param name="arg" select="rt:rib-name"/>
+	<with-param name="dflt" select="$default-rib/rt:name"/>
       </call-template>
       <apply-templates select="rt:import-filter"/>
     </if>

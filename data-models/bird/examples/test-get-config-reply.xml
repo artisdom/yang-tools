@@ -108,11 +108,11 @@
 	  <address>
 	    <ip>2001:db8:0:2::1</ip>
 	    <prefix-length>64</prefix-length>
+	    <bird:primary>true</bird:primary>
 	  </address>
 	  <address>
 	    <ip>2001:db8:0:3::f00</ip>
 	    <prefix-length>64</prefix-length>
-	    <bird:primary>true</bird:primary>
 	  </address>
 	  <autoconf>
 	    <create-global-addresses>false</create-global-addresses>
@@ -128,6 +128,12 @@
       <routing-instance>
 	<name>rtr4</name>
 	<type>bird:bird-ipv4</type>
+	<default-ribs>
+	  <default-rib>
+	    <address-family>v4ur:ipv4-unicast</address-family>
+	    <name>master4</name>
+	  </default-rib>
+	</default-ribs>
 	<interfaces>
 	  <bird:scan-time>10</bird:scan-time>
 	  <interface>
@@ -148,19 +154,38 @@
 		  <v4ur:destination-prefix>0.0.0.0/0</v4ur:destination-prefix>
 		  <v4ur:gateway>192.0.2.2</v4ur:gateway>
 		</v4ur:route>
+	      </v4ur:ipv4>
+	    </static-routes>
+	  </routing-protocol>
+	  <routing-protocol>
+	    <name>special</name>
+	    <type>rt:static</type>
+	    <static-routes>
+	      <v4ur:ipv4>
 		<v4ur:route>
-		  <v4ur:id>2</v4ur:id>
+		  <v4ur:id>1</v4ur:id>
 		  <v4ur:destination-prefix>203.0.113.0/25</v4ur:destination-prefix>
 		  <v4ur:special-nexthop>blackhole</v4ur:special-nexthop>
 		</v4ur:route>
 	      </v4ur:ipv4>
 	    </static-routes>
+	    <connected-ribs>
+	      <connected-rib>
+		<rib-name>extra</rib-name>
+	      </connected-rib>
+	    </connected-ribs>
 	  </routing-protocol>
 	</routing-protocols>
       </routing-instance>
       <routing-instance>
 	<name>rtr6</name>
 	<type>bird:bird-ipv6</type>
+	<default-ribs>
+	  <default-rib>
+	    <address-family>v6ur:ipv6-unicast</address-family>
+	    <name>master6</name>
+	  </default-rib>
+	</default-ribs>
 	<interfaces>
 	  <bird:scan-time>10</bird:scan-time>
 	  <interface>
@@ -176,7 +201,7 @@
 	      <v6ur:prefix-list>
 		<v6ur:prefix>
 		  <v6ur:prefix-spec>2001:db8:0:3::/64</v6ur:prefix-spec>
-		  <v6ur:autonomous-flag>false</v6ur:autonomous-flag>
+		  <v6ur:no-advertise/>
 		</v6ur:prefix>
 	      </v6ur:prefix-list>
 	    </v6ur:ipv6-router-advertisements>
@@ -198,6 +223,26 @@
 	  </routing-protocol>
 	</routing-protocols>
       </routing-instance>
+      <ribs>
+	<rib>
+	  <name>master4</name>
+	  <address-family>v4ur:ipv4-unicast</address-family>
+	</rib>
+	<rib>
+	  <name>extra</name>
+	  <address-family>v4ur:ipv4-unicast</address-family>
+	  <recipient-ribs>
+	    <recipient-rib>
+	      <rib-name>master4</rib-name>
+	      <filter>allow-all</filter>
+	    </recipient-rib>
+	  </recipient-ribs>
+	</rib>
+	<rib>
+	  <name>master6</name>
+	  <address-family>v6ur:ipv6-unicast</address-family>
+	</rib>
+      </ribs>
       <route-filters>
 	<route-filter>
 	  <name>allow-all</name>

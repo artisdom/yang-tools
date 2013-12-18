@@ -6,7 +6,7 @@
     <capability>urn:ietf:params:xml:ns:yang:iana-if-type?module=iana-if-type</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ip?module=ietf-ip</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-system?module=ietf-system&amp;features=authentication,local-users,timezone-location,ntp,radius</capability>
-    <capability>urn:ietf:params:xml:ns:yang:ietf-routing?module=ietf-routing</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-routing?module=ietf-routing&amp;features=multiple-ribs,multipath-routes</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing?module=ietf-ipv4-unicast-routing</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing?module=ietf-ipv6-unicast-routing</capability>
     <capability>http://www.nic.cz/ns/bird?module=bird</capability>

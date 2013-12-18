@@ -156,7 +156,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <call-template name="stmt-leaf">
       <with-param name="level" select="3"/>
       <with-param name="kw">skip</with-param>
-      <with-param name="arg"/>
+      <with-param name="arg">yes</with-param>
     </call-template>
   </template>
 
