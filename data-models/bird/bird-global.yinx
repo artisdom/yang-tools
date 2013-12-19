@@ -46,7 +46,6 @@
 	      </text>
 	    </description>
 	    <choice name="log-dest">
-	      <default value="stderr"/>
 	      <leaf name="stderr">
 		<type name="empty"/>
 	      </leaf>

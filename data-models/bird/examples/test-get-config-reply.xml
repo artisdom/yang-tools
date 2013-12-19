@@ -131,7 +131,7 @@
 	<default-ribs>
 	  <default-rib>
 	    <address-family>v4ur:ipv4-unicast</address-family>
-	    <name>master4</name>
+	    <rib-name>master4</rib-name>
 	  </default-rib>
 	</default-ribs>
 	<interfaces>
@@ -143,6 +143,37 @@
 	    <name>eth1</name>
 	  </interface>
 	</interfaces>
+	<bird:bird-config>
+	  <bird:logging>
+	    <bird:log>
+	      <bird:id>0</bird:id>
+	      <bird:log-classes>
+		<bird:class>error</bird:class>
+		<bird:class>fatal</bird:class>
+	      </bird:log-classes>
+	    </bird:log>
+	    <bird:log>
+	      <bird:id>1</bird:id>
+	      <bird:destination>
+		<bird:syslog>
+		  <bird:host>syslog.example.org</bird:host>
+		</bird:syslog>
+	      </bird:destination>
+	    </bird:log>
+	    <bird:log>
+	      <bird:id>2</bird:id>
+	      <bird:destination>
+		<bird:file>/var/log/bird.log</bird:file>
+	      </bird:destination>
+	      <bird:log-classes>
+		<bird:class>info</bird:class>
+	      </bird:log-classes>
+	    </bird:log>
+	  </bird:logging>
+	  <bird:debugging>
+	    <bird:commands>connect</bird:commands>
+	  </bird:debugging>
+	</bird:bird-config>
 	<routing-protocols>
 	  <routing-protocol>
 	    <name>st4</name>
@@ -183,7 +214,7 @@
 	<default-ribs>
 	  <default-rib>
 	    <address-family>v6ur:ipv6-unicast</address-family>
-	    <name>master6</name>
+	    <rib-name>master6</rib-name>
 	  </default-rib>
 	</default-ribs>
 	<interfaces>
@@ -227,6 +258,11 @@
 	<rib>
 	  <name>master4</name>
 	  <address-family>v4ur:ipv4-unicast</address-family>
+	  <recipient-ribs>
+	    <recipient-rib>
+	      <rib-name>extra</rib-name>
+	    </recipient-rib>
+	  </recipient-ribs>
 	</rib>
 	<rib>
 	  <name>extra</name>
