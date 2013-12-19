@@ -29,6 +29,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     xmlns:if="urn:ietf:params:xml:ns:yang:ietf-interfaces"
     xmlns:ip="urn:ietf:params:xml:ns:yang:ietf-ip"
     xmlns:rt="urn:ietf:params:xml:ns:yang:ietf-routing"
+    xmlns:bird="http://www.nic.cz/ns/bird"
     version="1.0">
   <output method="text"/>
   <strip-space elements="*"/>
@@ -47,9 +48,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <variable
       name="default-rib"
       select="$root/rt:routing-instance[rt:name=$inst-name]/rt:default-ribs
-	      /rt:default-rib[rt:address-family=$address-family]"/>
+	      /rt:default-rib[rt:address-family=$address-family]/rt:rib-name"/>
 
   <include href="../common-templates.xsl"/>
+  <include href="bird-global.xsl"/>
   <include href="bird-radv.xsl"/>
   <include href="bird-static.xsl"/>
   <include href="bird-device.xsl"/>
@@ -152,6 +154,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </call-template>
   </template>
 
+  <template name="rt-name">
+    <!-- Use "master" if the parameter is default table name. -->
+    <param name="tname" select="rt:rib-name"/>
+    <choose>
+      <when test="$tname=$default-rib">master</when>
+      <otherwise>
+	<value-of select="$tname"/>
+      </otherwise>
+    </choose>
+  </template>
+
   <template name="common-protocol-pars">
     <apply-templates
 	select="rt:description|rt:enabled|
@@ -203,10 +216,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <call-template name="stmt-leaf">
       <with-param name="kw">table</with-param>
       <with-param name="arg" select="rt:name"/>
+      <with-param name="dflt" select="$default-rib"/>
     </call-template>
   </template>
 
   <template match="rt:routing-instance">
+    <apply-templates select="bird:bird-config"/>
     <apply-templates select="rt:router-id"/>
     <apply-templates select="rt:interfaces" mode="device"/>
     <apply-templates select="rt:interfaces"/>
@@ -298,7 +313,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<with-param name="level" select="1"/>
 	<with-param name="kw">table</with-param>
 	<with-param name="arg" select="rt:rib-name"/>
-	<with-param name="dflt" select="$default-rib/rt:name"/>
+	<with-param name="dflt" select="$default-rib"/>
       </call-template>
       <apply-templates select="rt:import-filter"/>
     </if>

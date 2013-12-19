@@ -42,12 +42,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <with-param name="level" select="1"/>
       <with-param name="kw">table</with-param>
       <with-param name="arg" select="rt:rib-name"/>
-      <with-param name="dflt" select="$default-rib/rt:name"/>
+      <with-param name="dflt" select="$default-rib"/>
     </call-template>
     <call-template name="stmt-leaf">
       <with-param name="level" select="1"/>
       <with-param name="kw">peer table</with-param>
-      <with-param name="arg" select="$rib"/>
+      <with-param name="arg">
+	<call-template name="rt-name">
+	  <with-param name="tname" select="$rib"/>
+	</call-template>
+      </with-param>
     </call-template>
     <apply-templates select="rt:filter" mode="pipe"/>
     <call-template name="close-block"/>
