@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="acme-eap"
+        xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+        xmlns:h="http://www.w3.org/1999/xhtml"
+        xmlns:ae="http://acme.example.com/EAP">
+  <namespace uri="http://acme.example.com/EAP"/>
+  <prefix value="ae"/>
+  <import module="ietf-eap-metadata">
+    <prefix value="eapm"/>
+  </import>
+  <description>
+    <text>
+      <h:p>This module demonstrates how vendor-specific data can be
+      added to EAP metadata via augmentation.</h:p>
+    </text>
+  </description>
+  <augment target-node="/eapm:EAPIdentityProviderList/eapm:EAPIdentityProvider">
+    <leaf name="Foo">
+      <type name="string"/>
+      <description>
+	<text>ACME-specific extension of EAP Identity Provider
+	information.</text>
+      </description>
+    </leaf>
+  </augment>
+  <augment
+      target-node="/eapm:EAPIdentityProviderList/eapm:EAPIdentityProvider/eapm:AuthenticationMethods/eapm:AuthenticationMethod">
+    <when condition="eapm:EAPMethod = 'PEAP'">
+      <description>
+	<text>Only valid for PEAP.</text>
+      </description>
+    </when>
+    <leaf name="Bar">
+      <type name="uint8"/>
+      <description>
+	<text>ACME-specific extension of PEAP authentication
+	method.</text>
+      </description>
+    </leaf>
+  </augment>
+</module>
