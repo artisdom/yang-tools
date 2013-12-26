@@ -95,7 +95,7 @@
 	  </enum>
 	  <enum name="routes">
 	    <description>
-	      <text>routes exchanged with the connected routing table</text>
+	      <text>routes exchanged with the connected RIB</text>
 	    </description>
 	  </enum>
 	  <enum name="filters">
@@ -410,7 +410,7 @@
     </description>
     <input>
       <leaf name="router">
-	<type name="rt:router-ref"/>
+	<type name="rt:routing-instance-state-ref"/>
 	<mandatory value="true"/>
 	<description>
 	  <text>The name of a router instance. The protocol
@@ -431,9 +431,9 @@
 	    during the reload:</h:p>
 	    <h:ul>
 	      <h:li>'in': reimport the routes from each protocol
-	      instance to the connected routing table;</h:li>
+	      instance to the connected RIB;</h:li>
 	      <h:li>'out': reexport the active routes from the
-	      connected routing table to the protocol instance;</h:li>
+	      connected RIB to the protocol instance;</h:li>
 	      <h:li>'both' (default): perform both 'in' and
 	      'out'.</h:li>
 	    </h:ul>
@@ -452,7 +452,7 @@
 	<leaf-list name="protocol-instance">
 	  <type name="leafref">
 	    <path
-		value="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol/rt:name"/>
+		value="/rt:routing/rt:routing-instance/rt:routing-protocols/rt:routing-protocol/rt:name"/>
 	  </type>
 	  <description>
 	    <text>
@@ -472,7 +472,7 @@
   </augment>
 
   <augment
-      target-node="/rt:routing/rt:routing-tables/rt:routing-table/rt:routes/rt:route">
+      target-node="/rt:routing-state/rt:ribs/rt:rib/rt:routes/rt:route">
     <description>
       <text>Add universal route attributes.</text>
     </description>

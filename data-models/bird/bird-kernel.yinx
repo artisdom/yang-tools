@@ -36,7 +36,7 @@
   <!-- Data nodes -->
 
   <augment
-      target-node="/rt:routing/rt:router/rt:routing-protocols/rt:routing-protocol">
+      target-node="/rt:routing/rt:routing-instance/rt:routing-protocols/rt:routing-protocol">
     <when condition="rt:type = 'bird:kernel'"/>
     <leaf name="persist">
       <type name="boolean"/>

@@ -1,6 +1,6 @@
 HELLO = hello-server.xml
 CONFFILES = bird4.conf bird6.conf
-SUBMOD = device
+SUBMOD = global device kernel nest
 YMODS = ../bird.yang $(addprefix ../bird-,$(addsuffix .yang,$(SUBMOD)))
 TARGET ?= get-config-reply
 BASE ?= test

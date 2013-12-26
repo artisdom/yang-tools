@@ -11,9 +11,9 @@
   </import>
   <include module="bird-global"/>
   <include module="bird-device"/>
-  <!--
-  <include module="bird-nest"/>
   <include module="bird-kernel"/>
+  <include module="bird-nest"/>
+  <!--
   <include module="bird-rip"/>
   <include module="bird-ospf"/>
   <include module="bird-bgp"/>
