@@ -2,7 +2,7 @@
 
 <!-- Program name: bird-global.xsl
 
-Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2014 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates NETCONF "get-config" replies to BIRD configuration.
 This stylesheet handles global BIRD configuration.
@@ -78,12 +78,17 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   </template>
 
   <template match="bird:log-classes" mode="value">
-    <for-each select="bird:class">
-      <value-of select="."/>
-      <if test="position() != last()">
-	<text> </text>
-      </if>
-    </for-each>
+    <choose>
+      <when test="bird:all">all</when>
+      <when test="bird:class">
+	<text>{ </text>
+	<for-each select="bird:class">
+	  <value-of select="."/>
+	  <if test="position() != last()">, </if>
+	</for-each>
+	<text> }</text>
+      </when>
+    </choose>
   </template>
 
   <template match="bird:debugging">
@@ -101,6 +106,15 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	</choose>
       </with-param>
       <with-param name="dflt" select="0"/>
+    </call-template>
+  </template>
+
+  <template match="bird:protocols">
+    <call-template name="stmt-leaf">
+      <with-param name="kw">debug protocols</with-param>
+      <with-param name="arg">
+	<apply-templates select="bird:global-options"/>
+      </with-param>
     </call-template>
   </template>
 

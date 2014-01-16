@@ -172,6 +172,12 @@
 	  </bird:logging>
 	  <bird:debugging>
 	    <bird:commands>connect</bird:commands>
+	    <bird:protocols>
+	      <bird:global-options>
+		<bird:type>states</bird:type>
+		<bird:type>routes</bird:type>
+	      </bird:global-options>
+	    </bird:protocols>
 	  </bird:debugging>
 	</bird:bird-config>
 	<routing-protocols>
@@ -183,7 +189,7 @@
 		<v4ur:route>
 		  <v4ur:id>1</v4ur:id>
 		  <v4ur:destination-prefix>0.0.0.0/0</v4ur:destination-prefix>
-		  <v4ur:gateway>192.0.2.2</v4ur:gateway>
+		  <v4ur:next-hop>192.0.2.2</v4ur:next-hop>
 		</v4ur:route>
 	      </v4ur:ipv4>
 	    </static-routes>
@@ -196,7 +202,7 @@
 		<v4ur:route>
 		  <v4ur:id>1</v4ur:id>
 		  <v4ur:destination-prefix>203.0.113.0/25</v4ur:destination-prefix>
-		  <v4ur:special-nexthop>blackhole</v4ur:special-nexthop>
+		  <v4ur:special-next-hop>blackhole</v4ur:special-next-hop>
 		</v4ur:route>
 	      </v4ur:ipv4>
 	    </static-routes>
@@ -247,7 +253,7 @@
 		<v6ur:route>
 		  <v6ur:id>1</v6ur:id>
 		  <v6ur:destination-prefix>::/0</v6ur:destination-prefix>
-		  <v6ur:gateway>2001:db8:0:1::2</v6ur:gateway>
+		  <v6ur:next-hop>2001:db8:0:1::2</v6ur:next-hop>
 		</v6ur:route>
 	      </v6ur:ipv6>
 	    </static-routes>

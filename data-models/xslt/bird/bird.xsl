@@ -2,7 +2,7 @@
 
 <!-- Program name: bird.xsl
 
-Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2014 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 Translates XML instance configuration to BIRD config file.
 
@@ -52,6 +52,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <include href="../common-templates.xsl"/>
   <include href="bird-global.xsl"/>
+  <include href="bird-nest.xsl"/>
   <include href="bird-radv.xsl"/>
   <include href="bird-static.xsl"/>
   <include href="bird-device.xsl"/>

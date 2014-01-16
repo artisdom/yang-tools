@@ -46,6 +46,7 @@
 	      </text>
 	    </description>
 	    <choice name="log-dest">
+	      <default value="stderr"/>
 	      <leaf name="stderr">
 		<type name="empty"/>
 	      </leaf>
@@ -73,17 +74,11 @@
 		  classes.
 		</text>
 	      </description>
-	      <default value="none"/>
-	      <leaf name="none">
-		<type name="empty"/>
-		<description>
-		  <text>No logging. This is the default.</text>
-		</description>
-	      </leaf>
+	      <default value="all"/>
 	      <leaf name="all">
 		<type name="empty"/>
 		<description>
-		  <text>Log events of all classes.</text>
+		  <text>Log events of all classes. This is the default.</text>
 		</description>
 	      </leaf>
 	      <leaf-list name="class">
