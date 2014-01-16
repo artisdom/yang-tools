@@ -501,7 +501,7 @@
 	  <text>Name of the file for storing MRTdump messages.</text>
 	</description>
       </leaf>
-      <container name="global">
+      <container name="global-options">
 	<description>
 	  <text>Global MRTdump options.</text>
 	</description>
@@ -523,9 +523,14 @@
       target-node="/rt:routing/rt:routing-instance/bird:bird-config/bird:debugging">
     <container name="protocols">
       <description>
-	<text>Global protocol debugging options.</text>
+	<text>Global protocol debugging configuration.</text>
       </description>
-      <uses name="protocol-debugging"/>
+      <container name="global-options">
+	<description>
+	  <text>Global protocol debugging options.</text>
+	</description>
+	<uses name="protocol-debugging"/>
+      </container>
     </container>
   </augment>
 
