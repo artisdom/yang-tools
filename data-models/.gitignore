@@ -2,4 +2,6 @@
 *.sch
 *.dsrl
 *.yang
-
+*.json
+*.tree
+model.xsl
