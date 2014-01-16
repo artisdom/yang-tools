@@ -128,6 +128,7 @@
       <routing-instance>
 	<name>rtr4</name>
 	<type>bird:bird-ipv4</type>
+	<router-id>1.2.3.4</router-id>
 	<default-ribs>
 	  <default-rib>
 	    <address-family>v4ur:ipv4-unicast</address-family>
