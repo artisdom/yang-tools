@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <topology xmlns="http://www.netide.eu/ns/irf-topology"
+	    xmlns:irt="http://www.netide.eu/ns/irf-topology">
+    <network>
+      <name>ACME</name>
+      <description>High-level view of ACME network.</description>
+      <node>
+	<name>R1</name>
+	<type>irt:router</type>
+	<description>Company backbone router.</description>
+	<configuration>
+	  <url>r1-config.json</url>
+	  <format>JSON</format>
+	</configuration>
+	<interface>
+	  <name>eth0</name>
+	  <description>Uplink to ISP.</description>
+	</interface>
+	<interface>
+	  <name>eth1</name>
+	  <description>Protected segment connection.</description>
+	  <connection>R1-protected</connection>
+	</interface>
+	<interface>
+	  <name>eth2</name>
+	  <description>DMZ connection.</description>
+	  <connection>R1-DMZ</connection>
+	</interface>
+	<interface>
+	  <name>eth3</name>
+	  <description>Marketing dept. connection.</description>
+	  <connection>R1-marketing</connection>
+	</interface>
+	<interface>
+	  <name>eth4</name>
+	  <description>Research dept. connection.</description>
+	  <connection>R1-research</connection>
+	</interface>
+      </node>
+      <node>
+	<name>protected</name>
+	<type>irt:network</type>
+	<description>Protected segment.</description>
+	<interface>
+	  <name>R1-link</name>
+	  <description>Link to backbone router R1.</description>
+	  <connection>R1-protected</connection>
+	</interface>
+      </node>
+      <node>
+	<name>DMZ</name>
+	<type>irt:network</type>
+	<description>Demilitarized zone.</description>
+	<network-name>DMZ</network-name>
+	<interface>
+	  <name>R1-link</name>
+	  <description>Link to backbone router R1.</description>
+	  <connection>R1-DMZ</connection>
+	  <bind-to>
+	    <node>FW2</node>
+	    <interface>eth0</interface>
+	  </bind-to>
+	</interface>
+      </node>
+      <node>
+	<name>marketing</name>
+	<type>irt:network</type>
+	<description>Marketing department.</description>
+	<interface>
+	  <name>R1-link</name>
+	  <description>Link to backbone router R1.</description>
+	  <connection>R1-marketing</connection>
+	</interface>
+      </node>
+      <node>
+	<name>research</name>
+	<type>irt:network</type>
+	<description>Research department.</description>
+	<interface>
+	  <name>R1-link</name>
+	  <description>Link to backbone router R1.</description>
+	  <connection>R1-research</connection>
+	</interface>
+      </node>
+      <link>
+	<name>R1-protected</name>
+	<type>irt:point-to-point</type>
+	<description>Protected segment link.</description>
+      </link>
+      <link>
+	<name>R1-DMZ</name>
+	<type>irt:point-to-point</type>
+	<description>DMZ link.</description>
+      </link>
+      <link>
+	<name>R1-marketing</name>
+	<type>irt:point-to-point</type>
+	<description>Marketing dept. link.</description>
+      </link>
+      <link>
+	<name>R1-research</name>
+	<type>irt:point-to-point</type>
+	<description>Research dept. link.</description>
+      </link>
+    </network>
+    <network>
+      <name>DMZ</name>
+      <description>Demilitarized zone.</description>
+      <node>
+	<name>FW2</name>
+	<type>irt:host</type>
+	<description>Firewall for DMZ.</description>
+	<configuration>
+	  <url>fw2-config.xml</url>
+	</configuration>
+	<interface>
+	  <name>eth0</name>
+	  <description>External interface.</description>
+	</interface>
+	<interface>
+	  <name>eth1</name>
+	  <description>Internal interface.</description>
+	  <connection>DMZ-internal</connection>
+	</interface>
+      </node>
+      <link>
+	<name>DMZ-internal</name>
+	<type>irt:multi-access</type>
+	<description>DMZ Ethernet</description>
+      </link>
+    </network>
+  </topology>
+</config>

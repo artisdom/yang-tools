@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="irf-topology"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:irt="http://www.netide.eu/ns/irf-topology">
+  <namespace uri="http://www.netide.eu/ns/irf-topology"/>
+  <prefix value="irt"/>
+
+  <organization>
+    <text>NetIDE Project.</text>
+  </organization>
+  <contact>
+    <text>
+      <h:p>
+        Project Web: &lt;http://www.netide.eu&gt;
+      </h:p>
+      <h:p>
+	Editor: Ladislav Lhotka &lt;lhotka@nic.cz&gt;
+      </h:p>
+    </text>
+  </contact>
+  <description>
+    <text>
+      <h:p>This module is a part of the Intermediate Representation
+      Format (IRF) data model. It contains YANG definitions for
+      specifying hierarchical network topology.</h:p>
+      <h:p>Copyright © 2013 NetIDE Project Consortium.</h:p>
+      <h:p>TBD: licence text</h:p>
+    </text>
+  </description>
+  <revision date="2014-01-31">
+    <description>
+      <text>Initial revision.</text>
+    </description>
+  </revision>
+
+  <!-- Identities -->
+  <identity name="node-type">
+    <description>
+      <text>
+	Base identity form which specific node types are derived.
+      </text>
+    </description>
+  </identity>
+  <identity name="host">
+    <base name="node-type"/>
+    <description>
+      <text>This identity represents a host.</text>
+    </description>
+  </identity>
+  <identity name="router">
+    <base name="node-type"/>
+    <description>
+      <text>This identity represents a router.</text>
+    </description>
+  </identity>
+  <identity name="switch">
+    <base name="node-type"/>
+    <description>
+      <text>This identity represents a switch.</text>
+    </description>
+  </identity>
+  <identity name="network">
+    <base name="node-type"/>
+    <description>
+      <text>
+	This identity represents a node which contains a network.
+      </text>
+    </description>
+  </identity>
+
+  <identity name="link-type">
+    <description>
+      <text>
+	Base identity form which specific link types are derived.
+      </text>
+    </description>
+  </identity>
+  <identity name="multi-access">
+    <base name="link-type"/>
+    <description>
+      <text>
+	This identity represents a multi-access link.
+      </text>
+    </description>
+  </identity>
+  <identity name="point-to-point">
+    <base name="link-type"/>
+    <description>
+      <text>
+	This identity represents a point-to-point link.
+      </text>
+    </description>
+  </identity>
+
+  <!-- Typedefs -->
+
+  <typedef name="network-ref">
+    <type name="leafref">
+      <path value="/irt:topology/irt:network/irt:name"/>
+    </type>
+    <description>
+      <text>This type is used for leafs that reference a network.</text>
+    </description>
+  </typedef>
+
+  <!-- Groupings -->
+  <grouping name="common-data">
+    <description>
+      <text>Leafs that are common for all objects (networks, nodes,
+      links, etc.).</text>
+    </description>
+    <leaf name="name">
+      <type name="string"/>
+      <description>
+	<text>Name of the object, also serves as a list key.</text>
+      </description>
+    </leaf>
+    <leaf name="description">
+      <type name="string"/>
+      <description>
+	<text>Textual description of the object.</text>
+      </description>
+    </leaf>
+  </grouping>
+
+  <!-- Data -->
+  <container name="topology">
+    <description>
+      <text>Configuration of a hierarchical network topology.</text>
+    </description>
+    <list name="network">
+      <key value="name"/>
+      <description>
+	<text>
+	  <h:p>Configuration of a network.</h:p>
+	  <h:p>Every network consists of a set of nodes and a set of
+	  links.</h:p>
+	</text>
+      </description>
+      <uses name="common-data"/>
+      <list name="node">
+	<key value="name"/>
+	<description>
+	  <text>
+	    Configuration of a node, which can be a single end system
+	    (host, router, switch) or a network.
+	  </text>
+	</description>
+	<uses name="common-data"/>
+	<leaf name="type">
+	  <mandatory value="true"/>
+	  <type name="identityref">
+	    <base name="node-type"/>
+	  </type>
+	  <description>
+	    <text>Type of the node.</text>
+	  </description>
+	</leaf>
+	<container name="configuration">
+	  <description>
+	    <text>
+	      <h:p>Link to a config file for the node.</h:p>
+	      <h:p>This option is only available for end system nodes,
+	      not for networks.</h:p>
+	    </text>
+	  </description>
+	  <when condition="../type='irt:host'
+			   or ../type='irt:router'
+			   or ../type='irt:switch'"/>
+	  <leaf name="url">
+	    <type name="string"/>
+	    <description>
+	      <text>Locator of the config file.</text>
+	    </description>
+	  </leaf>
+	  <leaf name="format">
+	    <type name="enumeration">
+	      <enum name="XML"/>
+	      <enum name="JSON"/>
+	    </type>
+	    <default value="XML"/>
+	    <description>
+	      <text>Format of the config file.</text>
+	    </description>
+	  </leaf>
+	</container>
+	<leaf name="network-name">
+	  <when condition="../type='irt:network'"/>
+	  <type name="network-ref"/>
+	  <description>
+	    <text>
+	      <h:p>Reference to a network that is contained in the
+	      ancestor node.</h:p>
+	      <h:p>This option is only valid for nodes of the network
+	      type.</h:p>
+	    </text>
+	  </description>
+	</leaf>
+	<list name="interface">
+	  <key value="name"/>
+	  <min-elements value="1"/>
+	  <description>
+	    <text>
+	      Every node has one or more interfaces.
+	    </text>
+	  </description>
+	  <uses name="common-data"/>
+	  <container name="bind-to">
+	    <presence value="Bind to an interface from the contained network."/>
+	    <description>
+	      <text>
+		<h:p>An interface of a network-type node may be
+		identified with an interface of a node in the
+		contained network.</h:p>
+		<h:p>This is the glue that joins adjacent layers in
+		the topology hierarchy.</h:p>
+	      </text>
+	    </description>
+	    <when condition="../../type='irt:network'"/>
+	    <leaf name="node">
+	      <mandatory value="true"/>
+	      <type name="leafref">
+		<path value="/topology/network[name=current()/../../../network-name]/node/name"/>
+	      </type>
+	      <description>
+		<text>Reference to a node in the contained network.</text>
+	      </description>
+	    </leaf>
+	    <leaf name="interface">
+	      <type name="leafref">
+		<path
+		    value="/topology/network[name=current()/../../../network-name]/node[name=current()/../node]/interface/name"/>
+	      </type>
+	      <description>
+		<text>Reference to an interface belonging to the node
+		specified in the sibling leaf.</text>
+	      </description>
+	    </leaf>
+	  </container>
+	  <leaf name="connection">
+	    <type name="leafref">
+	      <path value="../../../link/name"/>
+	    </type>
+	    <description>
+	      <text>
+		<h:p>The link within the same network to which the
+		interface is connected.</h:p>
+		<h:p>If this leaf is not present, the interface is
+		considered unconnected in the current network. I may
+		be connected via an interface from an upper network
+		layer that is bound to the present interface.</h:p>
+	      </text>
+	    </description>
+	  </leaf>
+	</list>
+      </list>
+      <list name="link">
+	<key value="name"/>
+	<description>
+	  <text>Each network has zero or more links.</text>
+	</description>
+	<uses name="common-data"/>
+	<leaf name="type">
+	  <mandatory value="true"/>
+	  <type name="identityref">
+	    <base name="link-type"/>
+	  </type>
+	  <description>
+	    <text>Type of the link.</text>
+	  </description>
+	</leaf>
+	<list name="connection">
+	  <description>
+	    <text>
+	      <h:p>List of nodes/interfaces that are connected to the link.</h:p>
+	      <h:p>This is operational state data – the connections
+	      are configured in the configuration of interfaces.</h:p>
+	    </text>
+	  </description>
+	  <config value="false"/>
+	  <leaf name="node">
+	    <mandatory value="true"/>
+	    <type name="leafref">
+	      <path value="../../../node/name"/>
+	    </type>
+	    <description>
+	      <text>The connected node.</text>
+	    </description>
+	  </leaf>
+	  <leaf name="interface">
+	    <type name="leafref">
+	      <path value="../../../node[name=current()/../node]/interface/name"/>
+	    </type>
+	    <description>
+	      <text>The connected interface.</text>
+	    </description>
+	  </leaf>
+	</list>
+      </list>
+    </list>
+  </container>
+</module>
