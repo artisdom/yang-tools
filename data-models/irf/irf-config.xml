@@ -124,6 +124,32 @@
 	  <connection>DMZ-internal</connection>
 	</interface>
       </node>
+      <node>
+	<name>web</name>
+	<type>irt:host</type>
+	<description>Web server.</description>
+	<configuration>
+	  <url>web-config.json</url>
+	  <format>JSON</format>
+	</configuration>
+	<interface>
+	  <name>eth0</name>
+	  <connection>DMZ-internal</connection>
+	</interface>
+      </node>
+      <node>
+	<name>DNS</name>
+	<type>irt:host</type>
+	<description>DNS server.</description>
+	<configuration>
+	  <url>dns-config.json</url>
+	  <format>JSON</format>
+	</configuration>
+	<interface>
+	  <name>bce0</name>
+	  <connection>DMZ-internal</connection>
+	</interface>
+      </node>
       <link>
 	<name>DMZ-internal</name>
 	<type>irt:multi-access</type>
