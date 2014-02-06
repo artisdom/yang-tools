@@ -83,6 +83,21 @@
 	  <connection>R1-research</connection>
 	</interface>
       </node>
+      <node>
+	<name>Internet</name>
+	<type>irt:network</type>
+	<description>Rest of the Internet, external to ACME network.</description>
+	<interface>
+	  <name>external</name>
+	  <description>External interface, connected to ISP.</description>
+	  <connection>ISP-uplink</connection>
+	</interface>
+      </node>
+      <link>
+	<name>ISP-uplink</name>
+	<type>irt:point-to-point</type>
+	<description>Uplink to ISP</description>
+      </link>
       <link>
 	<name>R1-protected</name>
 	<type>irt:point-to-point</type>
