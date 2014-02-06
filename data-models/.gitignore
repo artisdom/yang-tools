@@ -4,4 +4,4 @@
 *.yang
 *.json
 *.tree
-model.xsl
+model.*
