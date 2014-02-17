@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="irf-packet-filter"
+	xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:irt="http://www.netide.eu/ns/irf-packet-filter">
+  <namespace uri="http://www.netide.eu/ns/irf-packet-filter"/>
+  <prefix value="ipf"/>
+
+  <import module="irf-topology">
+    <prefix value="irt"/>
+  </import>
+
+  <typedef name="packet-filter-action">
+    <type name="enumeration">
+      <enum name="accept">
+	<description>
+	  <text>Accept the packet.</text>
+	</description>
+      </enum>
+      <enum name="drop">
+	<description>
+	  <text>Silently drop the packet.</text>
+	</description>
+      </enum>
+      <enum name="reject">
+	<description>
+	  <text>
+	    Drop the packet but also send an ICMP message to the source.
+	  </text>
+	</description>
+      </enum>
+    </type>
+  </typedef>
+
+  <augment target-node="/irt:topology/irt:network/irt:node/irt:interface">
+    <container name="packet-filter">
+      <leaf name="policy">
+	<type name="packet-filter-action"/>
+	<default value="drop"/>
+	<description>
+	  <text>
+	    The default action to be applied to packets that don't
+	    match any rule.
+	  </text>
+	</description>
+      </leaf>
+      <list name="rule">
+	<key value="name"/>
+	<ordered-by value="user"/>
+	<uses name="irt:common-data"/>
+	<list name="match">
+	  <key value="name"/>
+	  <uses name="irt:common-data"/>
+	  <choice name="match-condition">
+	    <leaf name="match-source-node">
+	      <type name="leafref">
+		<path value="../../../../../../irt:node/irt:name"/>
+	      </type>
+	      <description>
+		<text>This condition will match if the source address
+		belongs to the given node.</text>
+	      </description>
+	    </leaf>
+	  </choice>
+	</list>
+	<leaf name="action">
+	  <mandatory value="true"/>
+	  <type name="packet-filter-action"/>
+	</leaf>
+      </list>
+    </container>
+  </augment>
+
+</module>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
   <topology xmlns="http://www.netide.eu/ns/irf-topology"
-	    xmlns:irt="http://www.netide.eu/ns/irf-topology">
+	    xmlns:irt="http://www.netide.eu/ns/irf-topology"
+	    xmlns:ipf="http://www.netide.eu/ns/irf-packet-filter">
     <network>
       <name>ACME</name>
       <description>High-level view of ACME network.</description>
@@ -46,6 +47,18 @@
 	  <name>R1-link</name>
 	  <description>Link to backbone router R1.</description>
 	  <connection>R1-protected</connection>
+	  <ipf:packet-filter>
+	    <ipf:policy>drop</ipf:policy>
+	    <ipf:rule>
+	      <ipf:name>accept-research</ipf:name>
+	      <ipf:description>Allow packets from research dept.</ipf:description>
+	      <ipf:match>
+		<ipf:name>match-research</ipf:name>
+		<ipf:match-source-node>research</ipf:match-source-node>
+	      </ipf:match>
+	      <ipf:action>accept</ipf:action>
+	    </ipf:rule>
+	  </ipf:packet-filter>
 	</interface>
       </node>
       <node>

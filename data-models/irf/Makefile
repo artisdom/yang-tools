@@ -1,4 +1,4 @@
-MODULES = irf-topology
+MODULES = irf-topology irf-packet-filter
 YMOD = $(addsuffix .yang, $(MODULES))
 TARGET ?= config
 BASE ?= irf
