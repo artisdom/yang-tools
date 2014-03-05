@@ -1,0 +1,36 @@
+module acme-eap {
+
+  namespace "http://acme.example.com/EAP";
+
+  prefix "ae";
+
+  import ietf-eap-metadata {
+    prefix "eapm";
+  }
+
+  description
+    "This module demonstrates how vendor-specific data can be added
+     to EAP metadata via augmentation.";
+
+  augment "/eapm:EAPIdentityProviderList/eapm:EAPIdentityProvider" {
+    leaf Foo {
+      type string;
+      description
+        "ACME-specific extension of EAP Identity Provider
+         information.";
+    }
+  }
+
+  augment "/eapm:EAPIdentityProviderList/eapm:EAPIdentityProvider/"
+        + "eapm:AuthenticationMethods/eapm:AuthenticationMethod" {
+    when "eapm:EAPMethod = 'PEAP'" {
+      description
+        "Only valid for PEAP.";
+    }
+    leaf Bar {
+      type uint8;
+      description
+        "ACME-specific extension of PEAP authentication method.";
+    }
+  }
+}

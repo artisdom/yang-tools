@@ -1,0 +1,515 @@
+module ietf-eap-metadata {
+
+  namespace "urn:ietf:params:xml:ns:yang:ietf-eap-metadata";
+
+  prefix "eapm";
+
+  import ietf-yang-types {
+    prefix "yang";
+  }
+
+  import ietf-inet-types {
+    prefix "inet";
+  }
+
+  organization
+    "IETF Operations and Management Area Working Group";
+
+  contact
+    "WG Web: <http://tools.ietf.org/wg/opsawg/>
+     WG List: <mailto:opsawg@ietf.org>
+
+     WG Chair: Melinda Shore
+               <mailto:melinda.shore@gmail.com>
+
+     WG Chair: Scott Bradner
+               <mailto:sob@harvard.edu>
+
+     WG Chair: Warren Kumari
+               <mailto:warren@kumari.net>
+
+     Editor: Stefan Winter
+             <stefan.winter@restena.lu>
+
+     Editor: Tomasz Wolniewicz
+             <twoln@umk.pl>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     configuration information of deployments of the Extensible
+     Authentication Protocol (EAP).
+
+     Copyright (c) 2013 IETF Trust and the persons identified as
+     authors of the code. All rights reserved.
+
+     Redistribution and use in source and binary forms, with or
+     without modification, is permitted pursuant to, and subject to
+     the license terms contained in, the Simplified BSD License set
+     forth in Section 4.c of the IETF Trust's Legal Provisions
+     Relating to IETF Documents
+     (http://trustee.ietf.org/license-info).
+
+     This version of this YANG module is part of RFC XXXX; see the
+     RFC itself for full legal notices.";
+
+  revision 2013-12-23 {
+    description
+      "RFC XXXX: A Configuration File Format for Extensible
+       Authentication Protocol (EAP) Deployments";
+  }
+
+  /* Typedefs */
+
+  typedef eap-method {
+    description
+      "A subset of EAP method types assigned by IANA.";
+    reference
+      "IANA Extensible Authentication Protocol (EAP) Registry.
+       <http://www.iana.org/assignments/eap-numbers/eap-numbers.xhtml>";
+    type enumeration {
+      enum TLS {
+        value "13";
+      }
+      enum TTLS {
+        value "21";
+      }
+      enum PEAP {
+        value "25";
+      }
+      enum MSCHAPv2 {
+        value "26";
+      }
+      enum FAST {
+        value "43";
+      }
+      enum PWD {
+        value "52";
+      }
+    }
+  }
+
+  typedef IEEE80211-RSN-Protocol {
+    type enumeration {
+      enum TKIP {
+        description
+          "Temporal Key Integrity Protocol (if used, crypto settings
+           \"WPA/TKIP\", \"WPA2/TKIP\" and \"WPA2/AES\" and possible
+           future protos are acceptable).";
+      }
+      enum CCMP {
+        description
+          "CTR with CBC-MAC Protocol (if used, only crypto setting
+           \"WPA2/AES\" and possible future protos are
+           acceptable).";
+      }
+    }
+  }
+
+  typedef gps-coordinate {
+    type decimal64 {
+      fraction-digits "7";
+    }
+    units "degrees";
+  }
+
+  /* Groupings */
+
+  grouping key-id {
+    leaf id {
+      type uint8;
+    }
+  }
+
+  grouping cert-data {
+    leaf format {
+      type string;
+      default "X.509";
+    }
+    leaf cert-data {
+      type binary;
+    }
+  }
+
+  grouping authentication-method {
+    description
+      "Common properties of authentication methods and inner
+       authentication methods.";
+    leaf EAPMethod {
+      type eap-method;
+      description
+        "EAP method identifier.";
+    }
+    container ServerSideCredential {
+      when "../EAPMethod != 'PWD'" {
+        description
+          "EAP-PWD method doesn't require any server certificate
+           parameters.";
+      }
+      description
+        "Means to authenticate the EAP server to the EAP peer.";
+      list CA {
+        key "name";
+        description
+          "Each entry of this list configures a Certification
+           Authority which is trusted to sign the expected server
+           certificate.
+
+           The entries SHOULD contain self-signed root certificates
+           to establish trust, and MAY contain additional
+           intermediate CA certificates which ultimately root in
+           these self-signed root CAs.";
+        leaf name {
+          description
+            "Name of the Certification Authority.";
+          type string;
+        }
+        uses cert-data;
+      }
+      choice server-id {
+        leaf-list ServerName {
+          description
+            "Expected server names, e.g. in incoming X.509 EAP server
+             certificates.";
+          type inet:host;
+        }
+        leaf-list ServerHandle {
+          description
+            "String handle identifying the server.
+
+             To be used by EAP methods that do not use X.509
+             certificates for mutual authentication.";
+          type string;
+        }
+      }
+    }
+    container ClientSideCredential {
+      description
+        "Means to authenticate the EAP peer to the EAP server.";
+      leaf allow-save {
+        description
+          "This switch determines whether sensitive parts of
+           client-side certificates can be permanently saved on the
+           device.";
+        type boolean;
+      }
+      leaf AnonymousIdentity {
+        description
+          "This is typically used on the outside of a tunneled EAP
+           method and allows to specify which user identity should be
+           used outside the tunnel. This string is not used for
+           actual user authentication, but may contain routing hints
+           to send the request to the right EAP server.";
+        type string;
+      }
+      leaf UserName {
+        description
+          "Actual username to be used for user authentication.
+
+           For tunneled EAP methods, this element SHOULD only occur
+           in the InnerAuthenticationMethod's
+           ClientSideCredentials.";
+        type string;
+      }
+      leaf Password {
+        description
+          "User's password, or another secret string which the user
+           needs to authenticate to the EAP server.";
+        type string;
+      }
+      container ClientCertificate {
+        description
+          "X.509 certificate and private key; if the key is
+           protected, Passphrase MAY be used to indicate the
+           passphrase.";
+        uses cert-data;
+      }
+      leaf Passphrase {
+        description
+          "The passphrase needed to unlock a cryptographic credential
+           internally on the device.";
+        type string;
+      }
+      leaf PAC {
+        description
+          "Protected Access Credential.";
+        when "../../EAPMethod = 'FAST'" {
+          description
+            "This type of provisioning is only supported by
+             EAP-FAST.";
+        }
+        type string;
+      }
+      leaf ProvisionPAC {
+        description
+          "Switch indicating whether a PAC should be provisioned on
+           the first connection.";
+        type boolean;
+      }
+    }
+  }
+
+  grouping lang-tag {
+    leaf lang {
+      type string;
+      description
+        "This should be an enumeration of IANA language subtag
+         registry values.";
+    }
+  }
+
+  grouping localized-choice {
+    choice simple-or-localized {
+      leaf text {
+        type string;
+      }
+      list localized-text {
+        key "lang";
+        min-elements "1";
+        uses lang-tag;
+        leaf text {
+          type string;
+        }
+      }
+    }
+  }
+
+  grouping localized-non-interactive {
+    uses localized-choice;
+  }
+
+  grouping localized-interactive {
+    uses localized-choice;
+  }
+
+  /* Configuration Data */
+
+  container EAPIdentityProviderList {
+    description
+      "Configuration parameters of EAP identity providers.";
+    list EAPIdentityProvider {
+      key "ID";
+      min-elements "1";
+      description
+        "List of EAP Identity providers.
+
+         In most practical applications, this list will contain only
+         a single element; a longer list can be used for metadata
+         transfers between systems or to allow users to select from a
+         set of providers.";
+      leaf ID {
+        description
+          "EAP identity provider identifier.";
+        type string;
+      }
+      uses lang-tag {
+        description
+          "Language tag for the whole EAPIdentityProvider entry.
+
+           If it is specified, then all user-displayable strings
+           inside the entry SHALL be considered suitable for use in
+           user interfaces in that language. Language tags then
+           SHOULD NOT be used with individual strings inside the
+           entry.
+
+           If this leaf is not set, individual user-displayable
+           strings SHOULD be marked with the language they are
+           written/available in.";
+      }
+      leaf NameIDFormat {
+        description
+          "Namespace identifier for 'ID'.";
+        mandatory "true";
+        type string;
+      }
+      leaf ValidUntil {
+        description
+          "Date and time when the configuration data expire.";
+        type yang:date-and-time;
+      }
+      container AuthenticationMethods {
+        description
+          "Configuration parameters of authentication methods
+           supported by the EAP identity provider.";
+        list AuthenticationMethod {
+          key "id";
+          ordered-by "user";
+          description
+            "Each entry of this list specifies properties of a
+             supported authentication method.
+
+             The order of entries indicates the server operator's
+             preference for the supported EAP types; entries
+             appearing earlier in the file indicate a more preferred
+             authentication method.";
+          uses key-id;
+          uses authentication-method {
+            refine "EAPMethod" {
+              mandatory "true";
+            }
+          }
+          list InnerAuthenticationMethod {
+            key "id";
+            description
+              "Entries of this list indicate that a tunneled EAP
+               method is in use, and that further server-side and/or
+               client-side credentials are defined inside the tunnel.
+
+               The presence of more than one
+               InnerAuthenticationMethod indicates that EAP Method
+               Chaining is in use, i.e. that several inner EAP
+               methods are to be executed in sequence inside the
+               tunnel.";
+            uses key-id;
+            uses authentication-method;
+            leaf NonEAPAuthMethod {
+              description
+                "Non-EAP authentication method, it can be used
+                 instead of EAPMethod.";
+              must "not(../EAPMethod)" {
+                error-message "NonEAPAuthMethod cannot appear "
+                            + "together with EAPMethod.";
+              }
+              type enumeration {
+                enum PAP {
+                  value "1";
+                }
+                enum MSCHAP {
+                  value "2";
+                }
+                enum MSCHAPv2 {
+                  value "3";
+                }
+              }
+            }
+          }
+        }
+      }
+      container CompatibleUses {
+        description
+          "Contexts in which the configured EAP identity can be
+           used.";
+        list IEEE80211 {
+          key "id";
+          unique "SSID ConsortiumOID MinRSNProto";
+          description
+            "Each entry specifies a WiFi context in which the EAP
+             identity can be used.
+
+             The conditions inside each list entry are considered AND
+             conditions. It does e.g. not make sense to have multiple
+             SSIDs in one IEEE80211-Properties field because the
+             condition would never match. To specify multiple ORed
+             network properties, use multiple IEEE80211 entries.";
+          uses key-id;
+          leaf SSID {
+            type string;
+            description
+              "The identity can be used only in networks with this
+               SSID.";
+          }
+          leaf ConsortiumOID {
+            type string;
+            description
+              "The identity can only be used on networks which
+               declare to serve for this consortium OID.";
+          }
+          leaf MinRSNProto {
+            type IEEE80211-RSN-Protocol;
+            description
+              "The identity shall be used only in networks supporting
+               at least this encryption level.";
+          }
+        }
+        container IEEE8023 {
+          presence "Enable wired Ethernet context";
+          description
+            "This container indicates that the EAP Identity can be
+             used in a wired ethernet context.";
+          leaf-list NetworkID {
+            type string;
+            description
+              "Each entry specifies a Network ID of a network in
+               which the identity can be used.";
+          }
+        }
+        container ABFAB {
+          presence "Enable ABFAB context";
+          description
+            "This container indicates that the EAP Identity can be
+             used in an ABFAB context.";
+          leaf-list ServiceIdentifier {
+            type string;
+            description
+              "Each entry specifies an application service for which
+               the identity can be used.";
+          }
+        }
+      }
+      container ProviderInfo {
+        description
+          "Additional information about the EAP identity provider
+           that can be displayed to the user.";
+        container DisplayName {
+          uses localized-non-interactive;
+          description
+            "Human-readable name of the EAP Identity Provider.";
+        }
+        container Description {
+          uses localized-non-interactive;
+          description
+            "Generic descriptive text to be displayed to the user
+             prior to the installation of the configuration data.";
+        }
+        list ProviderLocation {
+          key "Longitude Latitude";
+          description
+            "Approximate geograhic location(s) of the EAP Identity
+             Provider and/or his Points of Presence.";
+          leaf Longitude {
+            type gps-coordinate;
+          }
+          leaf Latitude {
+            type gps-coordinate;
+          }
+        }
+        container ProviderLogo {
+          presence "Show provider's logo";
+          description
+            "Logo of the EAP Identity Provider.";
+          leaf mime {
+            mandatory "true";
+            type string;
+            description
+              "Media type of the image.";
+          }
+          leaf image {
+            mandatory "true";
+            type binary;
+            description
+              "Image data.";
+          }
+        }
+        container TermsOfUse {
+          uses localized-non-interactive;
+          description
+            "Terms of use to be displayed to and acknowledged by the
+             user prior to the installation of the configuration on
+             the user's system.";
+        }
+        container Helpdesk {
+          description
+            "Contact information for the EAP provider's helpdesk.";
+          container EmailAddress {
+            uses localized-interactive;
+          }
+          container WebAddress {
+            uses localized-non-interactive;
+          }
+          container Phone {
+            uses localized-interactive;
+          }
+        }
+      }
+    }
+  }
+}
