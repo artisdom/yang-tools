@@ -1,0 +1,626 @@
+submodule bird-ospf {
+
+  belongs-to bird {
+    prefix "bird";
+  }
+
+  import ietf-inet-types {
+    prefix "inet";
+  }
+
+  import ietf-yang-types {
+    prefix "yang";
+  }
+
+  import ietf-routing {
+    prefix "rt";
+  }
+
+  include bird-nest;
+
+  description
+    "Configuration of the OSPF protocol.";
+
+  reference
+    "- RFC 2328: OSPF Version 2
+
+     - RFC 5340: OSPF for IPv6";
+
+  identity ospf {
+    base rt:routing-protocol;
+  }
+
+  identity ospfv3 {
+    base rt:routing-protocol;
+  }
+
+  typedef ospf-cost {
+    description
+      "Cost (metric) of an OSPF link or route.";
+    type uint32 {
+      range "1..16777215";
+    }
+  }
+
+  grouping ospf-route-content {
+    container ospf-metric {
+      description
+        "OSPF route metric.";
+      leaf type {
+        description
+          "OSPF metric type.
+
+           Metric of type 1 is comparable with internal metrics.";
+        type enumeration {
+          enum internal {
+            description
+              "Internal metric.";
+          }
+          enum external-type-1 {
+            description
+              "External metric comparable to internal metrics.";
+          }
+          enum external-type-2 {
+            description
+              "External metric that is always considered larger than
+               any internal metric.";
+          }
+        }
+        default "external-type-2";
+      }
+      leaf value {
+        description
+          "Value of the metric.";
+        type ospf-cost;
+        default "10000";
+      }
+    }
+    leaf ospf-tag {
+      type uint32;
+      description
+        "OSPF route tag.
+
+         It can be used to carry additional info that may be used if
+         the route is exported.";
+      default "0";
+    }
+  }
+
+  grouping ospf-network-list-spec {
+    list network {
+      key "prefix";
+      description
+        "Specification of a network prefix.";
+      leaf prefix {
+        description
+          "IPv4 or IPv6 prefix.";
+        type inet:ip-prefix;
+      }
+      leaf hidden {
+        description
+          "If true, the prefix is excluded.";
+        type boolean;
+        default "false";
+      }
+    }
+  }
+
+  grouping if-vlink-pars {
+    description
+      "Common interface and vlink configuration.";
+    leaf hello-interval {
+      description
+        "Time interval between subsequent hello messages sent out of
+         this interface.
+
+         All routers on the same link must use the same value.";
+      type uint16 {
+        range "1..max";
+      }
+      units "seconds";
+      default "10";
+    }
+    leaf retransmit-interval {
+      description
+        "Time interval between retransmissions of unacknowledged
+         updates.";
+      type uint32 {
+        range "1..max";
+      }
+      units "seconds";
+      default "5";
+    }
+    choice dead-neighbor {
+      default "dead-hello-count";
+      leaf dead-hello-count {
+        description
+          "A neighbor will be considered down if we don't see any
+           messages from it for dead-count * hello-interval
+           seconds.";
+        type uint32 {
+          range "1..max";
+        }
+        default "4";
+      }
+      leaf dead-interval {
+        description
+          "A neighbor is considered down if no messages are seen from
+           it during this time interval.";
+        type uint32;
+        units "seconds";
+      }
+    }
+    leaf wait-delay {
+      description
+        "Number os seconds to wait before exiting the Waiting
+         state.";
+      type uint32;
+      units "seconds";
+      default "40";
+    }
+    uses rip-ospf-passwords;
+  }
+
+  grouping if-pars {
+    description
+      "Interface parameters common for OSPF v2 and v3.";
+    leaf name {
+      type leafref {
+        path
+          "../../../../../../../rt:interfaces/rt:interface/rt:name";
+      }
+    }
+    leaf cost {
+      description
+        "Output cost of the interface.";
+      type ospf-cost;
+      default "10";
+    }
+    choice stub-or-not {
+      leaf stub {
+        description
+          "Presence of this leaf indicates an interface to a stub
+           area.
+
+           Such and interface does not send any hello messages and
+           doesn't listen to OSPF packets.";
+        type empty;
+      }
+      case no-stub {
+        uses if-vlink-pars;
+        leaf poll-interval {
+          description
+            "Time interval between subsequent hello messages sent to
+             a neighbor on an NBMA network.";
+          type uint32 {
+            range "1..max";
+          }
+          units "seconds";
+          default "20";
+        }
+        leaf priority {
+          description
+            "Priority of the router instance for the election of
+             Designated Router.";
+          type uint8;
+          default "1";
+        }
+        leaf rx-buffer-size {
+          description
+            "Size of the buffer for receiving OSPF packets. It should
+             be chosen to be larger than the maximum size of any
+             receive OSPF packet.";
+          type enumeration {
+            enum normal {
+              description
+                "RX buffer size = 2 * MTU";
+            }
+            enum large {
+              description
+                "RX buffer size = 65535 (maximux OSPF packet size)";
+            }
+          }
+          default "normal";
+        }
+        leaf link-type {
+          description
+            "Type of the link to which the interface is connected.
+
+             BIRD auto-detects the link type. This parameter is used
+             to enforce the behavior that is used for a different
+             link type.";
+          type enumeration {
+            enum bcast {
+              description
+                "Broadcast network.";
+            }
+            enum ptp {
+              description
+                "Point-to-point link.";
+            }
+            enum nbma {
+              description
+                "Non-broadcast multi-access network.";
+            }
+            enum ptmp {
+              description
+                "Point-to-multipoint network.";
+            }
+          }
+        }
+        leaf strict-nonbroadcast {
+          must "../type = 'nbma' or ../type = 'ptmp'" {
+            error-message "'strict-nonbroadcast' is only allowed "
+                        + "for 'nbma' or 'ptmp' link types.";
+          }
+          description
+            "If true, hello is not sent to an undefined neighbor.";
+          type boolean;
+          default "false";
+        }
+        leaf force-broadcast {
+          must "../type = 'bcast' or ../type = 'ptp'" {
+            error-message "'force-broadcast' is only allowed for "
+                        + "'bcast' or 'ptp' link types.";
+          }
+          description
+            "On broadcast and PtP networks, OSPF packets are normally
+             sent as multicast packets. If this switch is true,
+             broadcast is used instead.
+
+             NOTE: The use of broadcast is non-standard and may lead
+             to interoperability problems.";
+          type boolean;
+          default "false";
+        }
+        leaf check-link {
+          description
+            "Observe hardware link state as reported by the operating
+             system.
+
+             Whenever a link disappears, the neighbors connected
+             though it are immediately considered unreachable and
+             only the interface address (rather than the prefix of
+             the entire network) is propagated.
+
+             NOTE: Some operating systems or drivers don't provide
+             the link state information.";
+          type boolean;
+          default "false";
+        }
+        leaf ecmp-weight {
+          description
+            "Relative ECMP weight used for nexthops going through
+             this interface.";
+          must "ancestor::rt:routing-protocol/ecmp" {
+            error-message "ECMP is disabled.";
+          }
+          type uint16 {
+            range "1..256";
+          }
+          default "1";
+        }
+      }
+    }
+  }
+
+  grouping vlink-pars {
+    description
+      "Virtual link parameters common for OSPF v2 and v3.";
+    leaf peer-id {
+      type yang:dotted-quad;
+      description
+        "Router ID of the other end of the virtual link.";
+    }
+    uses if-vlink-pars;
+  }
+
+  augment "/rt:routing/rt:routing-tables/rt:routing-table/rt:routes/"
+        + "rt:route" {
+    description
+      "OSPF-specific route attributes.";
+    uses ospf-route-content;
+  }
+
+  augment "/rt:active-route/rt:output/rt:route" {
+    description
+      "OSPF-specific route attributes in the output of 'active-route'
+       RPC.";
+    uses ospf-route-content;
+  }
+
+  augment "/rt:routing/rt:router/rt:routing-protocols/"
+        + "rt:routing-protocol" {
+    when "rt:type = 'bird:ospf'";
+    leaf rfc1583-compatibility {
+      description
+        "Indicates whether routing table calculation is compatible
+         with RFC 1583.";
+      type boolean;
+      default "false";
+    }
+    leaf tick {
+      description
+        "Time period of route re-calculation.";
+      type uint16 {
+        range "1..max";
+      }
+      units "seconds";
+      default "1";
+    }
+    container ecmp {
+      presence "enable ECMP";
+      description
+        "Presence of this container indicates that OSPF is allowed to
+         generate ECMP (equal-cost multi-path) routes.";
+      leaf limit {
+        description
+          "Maximum number of next hops in one route.";
+        type uint16 {
+          range "1..max";
+        }
+        default "16";
+      }
+    }
+    container ospf-areas {
+      description
+        "Configuration of OSPF areas.";
+      must "area/id = 0 or area/id = '0.0.0.0'" {
+        description
+          "The backbone area must always be configured.";
+        error-message "Backbone area missing.";
+      }
+      list area {
+        key "id";
+        description
+          "Each entry configures an OSPF area.";
+        leaf id {
+          description
+            "Unique OSPF area identifier.
+
+             It is a 32-bit unsigned value that may be specified in
+             either integer or dotted quad format.";
+          type union {
+            type uint32;
+            type yang:dotted-quad;
+          }
+        }
+        leaf type {
+          description
+            "Determines the type of the area.";
+          type enumeration {
+            enum standard {
+              description
+                "Standard area.";
+            }
+            enum stub {
+              description
+                "Stub area.";
+            }
+            enum nssa {
+              description
+                "Not so stubby area.";
+              reference
+                "RFC 3101: The OSPF Not-So-Stubby Area (NSSA)
+                 Option";
+            }
+          }
+          default "standard";
+        }
+        container summaries {
+          presence "enable summary LSAs into stub or nssa";
+          must "../type = 'stub' or ../type = 'nssa'" {
+            error-message
+              "'summaries' is only allowed for stub or NSSA areas.";
+          }
+          description
+            "Presence of this container indicates that summary LSAs
+             are propagated as usual into a stub or NSSA area.
+             Otherwise, just the default route is propagated.";
+          leaf default-nssa {
+            must "../../type = 'nssa'" {
+              error-message
+                "'default-nssa' is only allowed for NSSA areas.";
+            }
+            description
+              "Indicates whether the default route is propagated into
+               the NSSA area.";
+            type boolean;
+            default "false";
+          }
+        }
+        container default-lsa {
+          must "../type = 'stub' or ../type = 'nssa'" {
+            error-message "'default-lsa' is only allowed for stub "
+                        + "or NSSA areas.";
+          }
+          description
+            "Parameters of the default route propagated into stub and
+             NSSA areas.";
+          leaf type {
+            description
+              "Type of the default LSA.";
+            type enumeration {
+              enum type-1;
+              enum type-2;
+            }
+            default "type-1";
+          }
+          leaf cost {
+            description
+              "Cost of the default route propagated into a stub or
+               NSSA area.";
+            type ospf-cost;
+            default "1000";
+          }
+        }
+        leaf translator {
+          description
+            "Setting this switch to true forces the router instance
+             into translating NSSA-LSAs to external LSAs.
+
+             The default behavior is that one translator is elected
+             per NSSA from all ABRs.";
+          must "../type = 'nssa'" {
+            error-message
+              "'translator' is only allowed for NSSA areas.";
+          }
+          type boolean;
+          default "false";
+        }
+        leaf translator-stability {
+          description
+            "NSSA-LSA translator stability interval.
+
+             This router instance continues to perform the translator
+             function for this time interval after a new translator
+             is elected.";
+          must "../type = 'nssa'" {
+            error-message "'translator-stability' is only allowed "
+                        + "for NSSA areas.";
+          }
+          type uint32;
+          units "seconds";
+          default "40";
+        }
+        container summary-lsa-networks {
+          description
+            "Configuration of networks that are used in summary LSAs
+             originated from this router instance.
+
+             Hidden network are not propagated to other areas.";
+          uses ospf-network-list-spec;
+        }
+        container external-networks {
+          description
+            "Configuration of area-external networks for NSSA-LSA
+             translation.
+
+             Hidden networks are not translated to external LSAs.";
+          must "../type = 'nssa'" {
+            error-message
+              "'external-networks' is only allowed for NSSA areas.";
+          }
+          uses ospf-network-list-spec;
+        }
+        container stub-networks {
+          description
+            "Configuration of stub networks that do not carry transit
+             traffic between OSPF routers.
+
+             The default behavior is to generate stub records for all
+             primary network addresses on OSPF interfaces without an
+             OSPF neighbor, and also for non-primary addresses on all
+             OSPF interfaces.
+
+             Configured entries are added to the set of stub
+             networks, or removed if the 'hidden' flag is true. Each
+             entry also suppresses default stub networks for that
+             network prefix.";
+          uses ospf-network-list-spec {
+            augment "network" {
+              leaf summary {
+                description
+                  "If true, all default stub networks that are
+                   subnetworks of the prefix are also suppressed.";
+                type boolean;
+                default "false";
+              }
+              leaf cost {
+                description
+                  "Cost of the stub network prefix.";
+                type ospf-cost;
+                default "10";
+              }
+            }
+          }
+        }
+        container ospf-area-interfaces {
+          description
+            "Configuration of OSPFv2 interfaces belonging to the
+             area.";
+          must "ancestor::routing-protocol/type = 'bird:ospf'" {
+            error-message
+              "'ospf-area-interfaces' only allowed for OSPFv2.";
+          }
+          list interface {
+            key "name";
+            description
+              "Each entry assigns an interface to the area and
+               provides additional configuration.";
+            uses if-pars;
+          }
+        }
+        container ospfv3-area-interfaces {
+          description
+            "Configuration of OSPFv3 interfaces belonging to the
+             area.";
+          must "ancestor::routing-protocol/type = 'bird:ospfv3'" {
+            error-message
+              "'ospfv3-area-interfaces' only allowed for OSPFv3.";
+          }
+          list interface {
+            key "name inst";
+            description
+              "Each entry assigns an interface to the area and
+               provides additional configuration.
+
+               In OSPFv3, multiple instances with different options
+               or even in different areas may be configured for the
+               same interface.";
+            uses if-pars;
+            leaf inst {
+              description
+                "Unique identifier of an interface instance.";
+              type uint16;
+            }
+          }
+        }
+        container ospf-virtual-links {
+          description
+            "Configuration of OSPF v2 virtual links.";
+          must "ancestor::routing-protocol/type = 'bird:ospf'" {
+            error-message
+              "'ospf-virtual-links' only allowed for OSPFv2.";
+          }
+          list virtual-link {
+            key "peer-id";
+            description
+              "Virtual link parameters.";
+            must "not(../../id = 0 or ../../id = '0.0.0.0')" {
+              error-message "Virtual link cannot be configured in "
+                          + "the backbone area.";
+            }
+            uses vlink-pars;
+          }
+        }
+        container ospfv3-virtual-links {
+          description
+            "Configuration of OSPFv3 virtual links.";
+          must "ancestor::routing-protocol/type = 'bird:ospfv3'" {
+            error-message
+              "'ospfv3-virtual-links' only allowed for OSPFv3.";
+          }
+          list virtual-link {
+            key "peer-id inst";
+            description
+              "Virtual link parameters.
+
+               In OSPFv3, multiple virtual links may be configured to
+               the same peer.";
+            must "not(../../id = 0 or ../../id = '0.0.0.0')" {
+              error-message "Virtual link cannot be configured in "
+                          + "the backbone area.";
+            }
+            leaf inst {
+              description
+                "Unique identifier of a virtual link instance.";
+              type uint16;
+            }
+            uses vlink-pars;
+          }
+        }
+      }
+    }
+  }
+}
