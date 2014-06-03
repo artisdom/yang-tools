@@ -1,0 +1,111 @@
+submodule bird-global {
+
+  belongs-to bird {
+    prefix "bird";
+  }
+
+  import ietf-inet-types {
+    prefix "inet";
+  }
+
+  import ietf-routing {
+    prefix "rt";
+  }
+
+  description
+    "Global BIRD Configuration.";
+
+  /* Data Nodes */
+
+  augment "/rt:routing/rt:routing-instance" {
+    container bird-config {
+      description
+        "Global BIRD configuration parameters.";
+      container logging {
+        description
+          "Configuration of logging.";
+        list log {
+          key "id";
+          leaf id {
+            type uint8;
+            description
+              "Sequential number of a log specification.";
+          }
+          container destination {
+            description
+              "The destination for logs.";
+            choice log-dest {
+              default "stderr";
+              leaf stderr {
+                type empty;
+              }
+              leaf file {
+                type string;
+              }
+              container syslog {
+                leaf host {
+                  type inet:host;
+                  default "localhost";
+                }
+              }
+            }
+          }
+          container log-classes {
+            description
+              "Classes of events to log.";
+            choice log-classes-options {
+              description
+                "Select all or none, or an explicit list of event
+                 classes.";
+              default "all";
+              leaf all {
+                type empty;
+                description
+                  "Log events of all classes. This is the default.";
+              }
+              leaf-list class {
+                type enumeration {
+                  enum info;
+                  enum warning;
+                  enum error;
+                  enum fatal;
+                  enum debug;
+                  enum trace;
+                  enum remote;
+                  enum auth;
+                  enum bug;
+                }
+                description
+                  "Each entry turns on one class of log messages.";
+              }
+            }
+          }
+        }
+      }
+      container debugging {
+        description
+          "Debugging options.";
+        leaf commands {
+          type enumeration {
+            enum off {
+              description
+                "No debugging.";
+            }
+            enum connect {
+              description
+                "Client connects and disconnects.";
+            }
+            enum all {
+              description
+                "All client commands.";
+            }
+          }
+          default "off";
+          description
+            "This parameter controls the level of debugging messages
+             regarding client connections.";
+        }
+      }
+    }
+  }
+}

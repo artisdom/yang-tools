@@ -1,7 +1,6 @@
 *.rn[gc]
 *.sch
 *.dsrl
-*.yang
 *.json
 *.tree
 model.*

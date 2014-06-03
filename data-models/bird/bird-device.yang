@@ -1,0 +1,65 @@
+submodule bird-device {
+
+  belongs-to bird {
+    prefix "bird";
+  }
+
+  import ietf-routing {
+    prefix "rt";
+  }
+
+  import ietf-interfaces {
+    prefix "if";
+  }
+
+  import ietf-ip {
+    prefix "ip";
+  }
+
+  description
+    "Configuration of the BIRD 'device' pseudo-protocol.";
+
+  /* Groupings */
+
+  grouping primary-address-switch {
+    leaf primary {
+      type boolean;
+      description
+        "Designate an IPv4 address as primary on a given interface.
+
+         This switch is only taken into account if multiple addresses
+         of the same family are configured.";
+      must ". = 'false' or "
+         + "not(../preceding-sibling::ip:address/primary = 'true')" {
+        error-message "Only one IP address per interface may be "
+                    + "designated as primary.";
+      }
+      default "false";
+    }
+  }
+
+  /* Data nodes */
+
+  augment "/rt:routing/rt:routing-instance/rt:interfaces" {
+    leaf scan-time {
+      type uint32;
+      default "0";
+      description
+        "Interval between consecutive scans of the network interface
+         list. Value of zero means no scanning.
+
+         On modern systems, notifications about the changes in the
+         interface status are asynchronous, so normally no scanning
+         is necessary.";
+      units "seconds";
+    }
+  }
+
+  augment "/if:interfaces/if:interface/ip:ipv4/ip:address" {
+    uses primary-address-switch;
+  }
+
+  augment "/if:interfaces/if:interface/ip:ipv6/ip:address" {
+    uses primary-address-switch;
+  }
+}

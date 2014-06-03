@@ -1,0 +1,79 @@
+submodule bird-kernel {
+
+  belongs-to bird {
+    prefix "bird";
+  }
+
+  import ietf-routing {
+    prefix "rt";
+  }
+
+  include bird-nest;
+
+  description
+    "Configuration of the BIRD 'kernel' pseudo-protocol.";
+
+  /* Features */
+
+  feature multiple-kernel-tables {
+    description
+      "Indicates availability of multiple kernel routing tables.";
+  }
+
+  /* Identities */
+
+  identity kernel {
+    base rt:routing-protocol;
+  }
+
+  /* Data nodes */
+
+  augment "/rt:routing/rt:routing-instance/rt:routing-protocols/"
+        + "rt:routing-protocol" {
+    when "rt:type = 'bird:kernel'";
+    leaf persist {
+      type boolean;
+      default "false";
+      description
+        "If this switch is true, BIRD leaves all its routes in the
+         kernel routing table when exiting.";
+    }
+    leaf scan-time {
+      type uint32 {
+        range "1..max";
+      }
+      description
+        "Interval between consecutive scans of the 'kernel' table.";
+      units "seconds";
+    }
+    leaf learn {
+      if-feature route-origin;
+      type boolean;
+      default "false";
+      description
+        "If this switch is true, BIRD will learn routes added to the
+         kernel routing tables through other means.";
+    }
+    leaf push-direct-routes {
+      type boolean;
+      default "false";
+      description
+        "If this switch is true, direct routes from BIRD are pushed
+         to the kernel routing table.
+
+         This is normally disabled because the kernel itself manages
+         the direct routes.";
+    }
+    leaf kernel-table {
+      if-feature multiple-kernel-tables;
+      type uint8;
+      description
+        "Select the native kernel table to be used as the 'kernel'
+         table (FIB).
+
+         The default is system-specific.";
+      must "not(. = ../preceding-sibling::rt:routing-protocol "
+         + "[rt:type = 'bird:kernel']/kernel-table)";
+    }
+  }
+}

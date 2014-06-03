@@ -1,0 +1,90 @@
+module bird {
+
+  namespace "http://www.nic.cz/ns/bird";
+
+  prefix "bird";
+
+  import ietf-routing {
+    prefix "rt";
+  }
+
+  include bird-global;
+
+  include bird-device;
+
+  include bird-kernel;
+
+  include bird-nest;
+
+  /*
+  <include module="bird-rip"/>
+  <include module="bird-ospf"/>
+  <include module="bird-bgp"/>
+  */
+
+  organization
+    "CZ.NIC, z. s. p. o.";
+
+  contact
+    "Ladislav Lhotka <mailto:lhotka@nic.cz>";
+
+  reference
+    "http://bird.network.cz/?get_doc&f=bird.html";
+
+  description
+    "Configuration of the BIRD Internet Routing Daemon.";
+
+  revision 2013-12-24 {
+    description
+      "Initial revision.";
+  }
+
+  /* Identities */
+
+  identity bird-daemon {
+    base rt:standard-routing-instance;
+  }
+
+  identity bird-ipv4 {
+    base bird-daemon;
+    description
+      "This identity represents BIRD routing daemon compiled with
+       support for IPv4 routing.";
+  }
+
+  identity bird-ipv6 {
+    base bird-daemon;
+    description
+      "This identity represents BIRD routing daemon compiled with
+       support for IPv6 routing.";
+  }
+
+  /* RPC Methods */
+
+  rpc shutdown {
+    description
+      "Shut BIRD down.";
+    input {
+      leaf router {
+        type rt:routing-instance-state-ref;
+        description
+          "The name of the routing instance to be shut down.";
+      }
+    }
+  }
+
+  /* Data Nodes */
+
+  augment
+    "/rt:routing/rt:routing-instance/rt:interfaces/rt:interface" {
+    description
+      "Configuration of the 'direct' protocol.";
+    leaf enable-direct-route {
+      type boolean;
+      default "true";
+      description
+        "Enable/disable generation of the direct route for this
+         logical interface.";
+    }
+  }
+}
