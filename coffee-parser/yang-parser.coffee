@@ -79,16 +79,25 @@ dqArg =
 
 yArgument = P.choice uArg, dqArg, sqArg
 
-semiOrBlock = P.char(';').bind -> P.unit []
-
 yStatement = yKeyword.bind (kw) ->
   sep.bind -> yArgument.bind (arg) ->
     optSep.bind -> semiOrBlock.bind (sst) ->
       P.unit new YangStatement kw[0], kw[1], arg, sst
 
-p = P.skipSpace.bind -> yArgument
+stmtBlock = yStatement.endBy(optSep).between \
+  (P.char('{').bind -> optSep), P.char('}')
 
-console.log yStatement.parse '''
-description "Agoj troubo!";
+semiOrBlock = (P.char(';').bind -> P.unit []).orElse stmtBlock
+
+yangSnippet = yStatement.between optSep, optSep
+
+console.log yangSnippet.parse '''   /* ha ha */
+container bar {
+  leaf foo { // line comment
+    type uint8;
+    default 42;
+  }
+}
+
 '''
  
