@@ -1,3 +1,4 @@
+fs = require('fs')
 P = require('comparse')
 
 class YangStatement
@@ -25,7 +26,7 @@ yIdentifier =
 
 yKeyword =
   (yIdentifier.bind (prf) -> P.char(':').bind ->
-    P.unit prf).option('').bind (pon) ->
+    P.unit prf).option().bind (pon) ->
       yIdentifier.bind (kw) ->
         P.unit [pon, kw]
 
@@ -89,15 +90,29 @@ stmtBlock = yStatement.endBy(optSep).between \
 
 semiOrBlock = (P.char(';').bind -> P.unit []).orElse stmtBlock
 
-yangSnippet = yStatement.between optSep, optSep
+parseYang = (text, top=null) ->
+  yst = yStatement.between(optSep, optSep).parse text
+  if top? and yst.kw != top
+    throw P.error "Wrong top-level statement", 0
+  yst
 
-console.log yangSnippet.parse '''   /* ha ha */
+parseModule = (fname, top=null) ->
+  text = fs.readFileSync fname, "utf8"
+  parseYang text, "module"
+
+yam = '''   /* ha ha */
 container bar {
   leaf foo { // line comment
     type uint8;
     default 42;
   }
 }
-
 '''
- 
+
+try
+  console.log parseModule "/Users/lhotka/sandbox/YANG/example-rip.yang"
+catch e
+  if e.name is "ParsingError"
+    console.log "Parsing failed at", e.offset
+  else
+    throw e
