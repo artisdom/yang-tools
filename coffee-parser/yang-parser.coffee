@@ -35,7 +35,7 @@ uArg =
     P.char('/').notFollowedBy(P.oneOf '/*')).many(1).bind (str) ->
       P.unit str.join ''
 
-sqArg =
+sqLit =
   P.sat((c) -> c != "'").many().between(
     P.char("'"), P.char("'")).bind (cs) -> P.unit cs.join ''
 
@@ -53,15 +53,16 @@ dqTrailing =
 
 dqString = (lim) ->
   trimLead = (str) ->
+    left = lim
     sptab = '        '
     i = 0
-    while lim > 0
+    while left > 0
       c = str[i++]
       if c == ' '
-        lim -= 1
+        left -= 1
       else if c == '\t'
-        return sptab[...8-lim] + str[i..] if lim < 8
-        lim -= 8
+        return sptab[...8-left] + str[i..] if left < 8
+        left -= 8
       else
         return str[(i-1)..]
     str[i..]
@@ -69,16 +70,22 @@ dqString = (lim) ->
     res = []
     lines = cs.join('').split('\n')
     for ln in lines[..-2]
-      mo = trimLead(ln).match /(.*\S)\s*/
+      mo = trimLead(ln).match /(.*\S)?\s*/
       res.push mo[1]
-    res.push trimLead lines.pop() 
+    res.push trimLead lines.pop()
     P.unit res.join('\n')
 
-dqArg =
+dqLit =
   P.char('"').bind -> P.coordinates.bind (col) ->
     dqString col[1]
 
-yArgument = P.choice uArg, dqArg, sqArg
+qLit = dqLit.orElse sqLit
+
+qArg = qLit.bind (lft) ->
+  (P.char('+').between(optSep, optSep).bind -> qArg).option().bind (rt) ->
+    P.unit lft + rt
+
+yArgument = uArg.orElse(qArg).option()
 
 yStatement = yKeyword.bind (kw) ->
   sep.bind -> yArgument.bind (arg) ->
@@ -102,6 +109,13 @@ parseModule = (fname, top=null) ->
 
 yam = '''   /* ha ha */
 container bar {
+  description
+    "This module contains a collection of YANG definitions for the
+     retrieval of information from a NETCONF server.
+
+     Copyright (c) 2013 IETF Trust and the persons identified as
+     authors of the code.  All rights reserved.";
+
   leaf foo { // line comment
     type uint8;
     default 42;
@@ -110,7 +124,9 @@ container bar {
 '''
 
 try
-  console.log parseModule "/Users/lhotka/sandbox/YANG/example-rip.yang"
+  #console.log yEscape.parse '\\"'
+  console.log parseModule "/Users/lhotka/Projects/yang/interfaces/ietf-interfaces.yang"
+  #console.log parseModule "/Users/lhotka/sandbox/YANG/minimal.yang"
 catch e
   if e.name is "ParsingError"
     console.log "Parsing failed at", e.offset
