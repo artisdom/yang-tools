@@ -92,8 +92,8 @@ yStatement = yKeyword.bind (kw) ->
     optSep.bind -> semiOrBlock.bind (sst) ->
       P.unit new YangStatement kw[0], kw[1], arg, sst
 
-stmtBlock = yStatement.endBy(optSep).between \
-  (P.char('{').bind -> optSep), P.char('}')
+stmtBlock = P.char('{').bind ->
+  (optSep.bind -> yStatement).manyTill optSep.bind -> P.char('}')
 
 semiOrBlock = (P.char(';').bind -> P.unit []).orElse stmtBlock
 
@@ -107,7 +107,7 @@ parseModule = (fname, top=null) ->
   text = fs.readFileSync fname, "utf8"
   parseYang text, "module"
 
-yam = '''   /* ha ha */
+yam = '''
 container bar {
   description
     "This module contains a collection of YANG definitions for the
@@ -124,11 +124,11 @@ container bar {
 '''
 
 try
-  #console.log yEscape.parse '\\"'
-  console.log parseModule "/Users/lhotka/Projects/yang/interfaces/ietf-interfaces.yang"
+  console.log parseYang yam
+  #console.log parseModule "/Users/lhotka/Projects/yang/interfaces/ietf-interfaces.yang"
   #console.log parseModule "/Users/lhotka/sandbox/YANG/minimal.yang"
 catch e
   if e.name is "ParsingError"
-    console.log "Parsing failed at", e.offset
+    console.log "Parsing failed at", e.offset, "(line", e.coords[0], "column", e.coords[1] + ")"
   else
     throw e
