@@ -106,29 +106,3 @@ parseYang = (text, top=null) ->
 parseModule = (fname, top=null) ->
   text = fs.readFileSync fname, "utf8"
   parseYang text, "module"
-
-yam = '''
-container bar {
-  description
-    "This module contains a collection of YANG definitions for the
-     retrieval of information from a NETCONF server.
-
-     Copyright (c) 2013 IETF Trust and the persons identified as
-     authors of the code.  All rights reserved.";
-
-  leaf foo { // line comment
-    type uint8;
-    default 42;
-  }
-}
-'''
-
-try
-  console.log parseYang yam
-  #console.log parseModule "/Users/lhotka/Projects/yang/interfaces/ietf-interfaces.yang"
-  #console.log parseModule "/Users/lhotka/sandbox/YANG/minimal.yang"
-catch e
-  if e.name is "ParsingError"
-    console.log "Parsing failed at", e.offset, "(line", e.coords[0], "column", e.coords[1] + ")"
-  else
-    throw e
