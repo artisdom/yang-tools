@@ -1,4 +1,3 @@
-fs = require('fs')
 P = require('comparse')
 
 class YangStatement
@@ -97,12 +96,10 @@ stmtBlock = P.char('{').bind ->
 
 semiOrBlock = (P.char(';').bind -> P.unit []).orElse stmtBlock
 
-parseYang = (text, top=null) ->
+parse = (text, top=null) ->
   yst = yStatement.between(optSep, optSep).parse text
   if top? and yst.kw != top
     throw P.error "Wrong top-level statement", 0
   yst
 
-parseModule = (fname, top=null) ->
-  text = fs.readFileSync fname, "utf8"
-  parseYang text, "module"
+module.exports = {parse}
