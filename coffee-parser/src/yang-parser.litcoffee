@@ -233,8 +233,11 @@ just a single statement.
 Its arguments are:
 
 * `text`: text to parse,
-* `top` (optional): keyword of the top-level statement. If it is not
-  given or has the value of `null`, then any statement is accepted.
+
+* `top` (optional): keyword of the top-level statement. If it is not given or has the value of `null`, then any statement is accepted.
+
+This function is installed in the `module.exports` object so that it
+can be imported from other modules.
 
     parse = (text, top=null) ->
       yst = statement.between(optSep, optSep).parse text
@@ -243,3 +246,4 @@ Its arguments are:
       yst
     
     module.exports = {parse}
+
