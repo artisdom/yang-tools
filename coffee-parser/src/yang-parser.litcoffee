@@ -102,8 +102,7 @@ braces (`{` or `}`) and opening comment sequences (`//` or `/*`).
 
     uArg =
       (P.noneOf(" '\"\n\t\r;{}/").orElse \
-        P.char('/').notFollowedBy(P.oneOf '/*')).many(1).bind (str) ->
-          P.unit str.join ''
+        P.char('/').notFollowedBy(P.oneOf '/*')).concat(1)
 
 Otherwise, an argument is a single- or double-quoted literal strings, or
 multiple single- or double-quoted strings concatenated with `+`.
@@ -112,8 +111,8 @@ A single-quoted literal string is simple – it may contain arbitrary
 characters except single quote (`'`). No escape sequences are possible.
 
     sqLit =
-      P.sat((c) -> c != "'").many().between(
-        P.char("'"), P.char("'")).bind (cs) -> P.unit cs.join ''
+      P.sat((c) -> c != "'").concat().between(
+        P.char("'"), P.char("'"))
 
 A double-quoted string is considerably more complicated. First, it may
 contain one of four escape sequences representing special characters.
