@@ -1481,14 +1481,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <define name="any-element">
     <element>
       <anyName/>
-      <zeroOrMore>
-	<choice>
-	  <attribute>
-	    <anyName/>
-	  </attribute>
-	  <ref name="any-element"/>
-	</choice>
-      </zeroOrMore>
+      <mixed>
+	<zeroOrMore>
+	  <choice>
+	    <attribute>
+	      <anyName/>
+	    </attribute>
+	    <ref name="any-element"/>
+	  </choice>
+	</zeroOrMore>
+      </mixed>
     </element>
   </define>
 
