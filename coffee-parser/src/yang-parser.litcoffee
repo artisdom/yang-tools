@@ -192,24 +192,24 @@ surrounded by whitespace or comments).
       (P.char('+').between(optSep, optSep).bind -> qArg).option().bind (rt) ->
         P.unit lft + rt
 
-All in all, an argument is unquoted or quoted, or it may also be
-absent (e.g. `input` and `output` statements have no argument).
+All in all, an argument is unquoted or quoted.
 
-    argument = uArg.orElse(qArg).option()
+    argument = uArg.orElse(qArg)
 
 Statements
 ----------
 
 Equipped with the above parsers, we can now easily define a recursive
 parser for a YANG statement, which consists of a keyword, argument,
-and then either a semicolon or a block of substatements. The keyword
-and argument must be separated by whitespace or comment, a separator
-between the argument and the semicolon or block is optional.
+and then either a semicolon or a block of substatements. If an
+argument is present, it must be separated from the keyword by
+whitespace or comment. A separator preceding the semicolon or block is
+optional.
 
 The result of the `statement` parser is an initialized `YangStatement` object.
 
     statement = keyword.bind (kw) ->
-      sep.bind -> argument.bind (arg) ->
+      (sep.bind -> argument).option().bind (arg) ->
         optSep.bind -> semiOrBlock.bind (sst) ->
           P.unit new YangStatement kw[0], kw[1], arg, sst
 
