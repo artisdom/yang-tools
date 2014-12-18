@@ -26,10 +26,10 @@ are:
 
 * `substmts`: array of substatements
 
-Foo bar.
-
+```
     class YangStatement
         constructor: (@prf, @kw, @arg, @substmts) ->
+```
 
 Comments
 --------
