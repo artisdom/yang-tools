@@ -26,11 +26,11 @@ are:
 
 * `substmts`: array of substatements
 
-<break/>
 
+```javascript
     class YangStatement
       constructor: (@prf, @kw, @arg, @substmts) -> 
-
+```
 
 Comments
 --------
