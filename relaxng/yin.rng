@@ -217,6 +217,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       </attribute>
       <interleave>
 	<ref name="prefix-stmt"/>
+	<optional>
+	  <ref name="revision-date-stmt"/>
+	</optional>
 	<ref name="extensions"/>
       </interleave>
     </element>
@@ -227,7 +230,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <attribute name="module">
 	<ref name="identifier"/>
       </attribute>
-      <ref name="extensions"/>
+      <interleave>
+	<optional>
+	  <ref name="revision-date-stmt"/>
+	</optional>
+	<ref name="extensions"/>
+      </interleave>
     </element>
   </define>
 
@@ -246,6 +254,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <ref name="extensions"/>
+    </element>
+  </define>
+
+  <define name="revision-date-stmt">
+    <element name="revision-date">
+      <attribute name="date">
+	<data type="date"/>
+      </attribute>
     </element>
   </define>
 
