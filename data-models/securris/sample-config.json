@@ -1,0 +1,103 @@
+{
+  "securris:securris": {
+    "global": {
+      "dump-target": "/tmp/securris/",
+      "device": [
+        {
+          "id": "05815874",
+          "description": "Siren - very loud!",
+          "type": "securris:siren"
+        },
+        {
+          "id": "666",
+          "description": "Turns off Milky Way.",
+          "type": "securris:relay"
+        }
+      ]
+    },
+    "section": [
+      {
+        "name": "Section1",
+        "alarm": {
+          "ignore": true
+        },
+        "device": [
+          {
+            "id": "111",
+            "type": "securris:PIR"
+          }
+        ]
+      },
+      {
+        "name": "Section4",
+        "alarm": {
+          "ignore": true
+        },
+        "device": [
+          {
+            "id": "111",
+            "type": "securris:PIR"
+          },
+          {
+            "id": "09443841",
+            "type": "securris:key-fob",
+            "description": "Klicenka 2",
+            "lost-after": 0
+          }
+        ]
+      },
+      {
+        "name": "Section5",
+        "description": "Some text.",
+        "report-mail": "securris@seznam.cz",
+        "alarm": {
+          "mail": "securris@seznam.cz",
+          "sms": "+420-602-111111",
+          "command": "mycommand -x foo",
+          "activate": [
+            "05815874",
+            "666"
+          ]
+        },
+        "arm": {
+          "mail": "securris@seznam.cz",
+          "sms": "+420-602-222222",
+          "command": "mycommand -x bar"
+        },
+        "device": [
+          {
+            "id": "01842835",
+            "type": "securris:door-sensor",
+            "description": "Maly dverni spinac.",
+            "delay": 10,
+            "lost-after": 12,
+            "confirm": [
+              "06662032"
+            ],
+            "ignore-events": "tamper"
+          },
+          {
+            "id": "06662032",
+            "type": "securris:PIR",
+            "description": "PIR",
+            "delay": 10,
+            "lost-after": 1200,
+            "ignore-events": "panic"
+          },
+          {
+            "id": "08395265",
+            "type": "securris:key-fob",
+            "description": "Klicenka 1",
+            "lost-after": 0
+          },
+          {
+            "id": "07735779",
+            "type": "securris:smoke-detector",
+            "description": "Detektor koure.",
+            "lost-after": 300
+          }
+        ]
+      }
+    ]
+  }
+}

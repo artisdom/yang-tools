@@ -1,0 +1,270 @@
+module securris {
+
+  namespace "http://www.nic.cz/ns/securris";
+
+  prefix "srr";
+
+  import ietf-inet-types {
+    prefix "inet";
+  }
+
+  organization
+    "CZ.NIC, z. s. p. o.";
+
+  contact
+    "Ladislav Lhotka <mailto:lhotka@nic.cz>";
+
+  description
+    "This YANG module defines the data model for Turris smart home
+     gateway.";
+
+  revision 2015-03-02 {
+    description
+      "Initial revision.";
+  }
+
+  /* Identities */
+
+  identity device-type {
+    description
+      "Base identity from which specific device types are derived.";
+  }
+
+  identity global-device {
+    description
+      "Base identity from which global device types are derived.";
+    base device-type;
+  }
+
+  identity section-device {
+    description
+      "Base identity from which section-wise device types are
+       derived.";
+    base device-type;
+  }
+
+  identity siren {
+    description
+      "Siren device.";
+    base global-device;
+  }
+
+  identity relay {
+    description
+      "Relay device.";
+    base global-device;
+  }
+
+  identity key-fob {
+    description
+      "Remote controller.";
+    base section-device;
+  }
+
+  identity PIR {
+    description
+      "Passive infrared sensor.";
+    base section-device;
+  }
+
+  identity door-sensor {
+    description
+      "Magnetic door sensor.";
+    base section-device;
+  }
+
+  identity smoke-detector {
+    description
+      "Smoke detector.";
+    base section-device;
+  }
+
+  /* Typedefs */
+
+  typedef email-address {
+    type string {
+      pattern "[\\-_.a-zA-Z0-9]+@[\\-_.a-zA-Z0-9]+(\\.[\\-_.a-zA-Z0-9]+)*";
+    }
+    description
+      "Valid format of an email address.";
+  }
+
+  typedef phone-number {
+    type string {
+      pattern "\\+?[0-9]+(-[0-9]+)*";
+    }
+    description
+      "Valid format of a phone number.";
+  }
+
+  /* Groupings */
+
+  grouping description {
+    leaf description {
+      type string;
+      description
+        "Textual description of an object.";
+    }
+  }
+
+  grouping common-device-pars {
+    description
+      "Common device parameters";
+    leaf id {
+      type string {
+        pattern "[0-9]{1,8}";
+      }
+      description
+        "Identifier of the device.";
+    }
+    uses description;
+    leaf lost-after {
+      type uint32;
+      units "seconds";
+      default "300";
+      description
+        "The time interval after receiving the last beacon when the
+         device is considered dead.
+
+         Value of 0 means that the device sends no beacons.";
+    }
+  }
+
+  grouping common-actions {
+    description
+      "Common actions that can be performed in reaction to events.";
+    leaf mail {
+      type email-address;
+      description
+        "Send an email.";
+    }
+    leaf sms {
+      type phone-number;
+      description
+        "Send a text message.";
+    }
+    leaf command {
+      type string;
+      description
+        "Execute a shell command.";
+    }
+  }
+
+  /* Configuration data */
+
+  container securris {
+    description
+      "Securris gateway configuration.";
+    container global {
+      description
+        "Global configuration.";
+      leaf dump-target {
+        description
+          "Location for dumps.";
+        type inet:uri;
+        default "file:///tmp/securris-dump.log";
+      }
+      list device {
+        key "id";
+        description
+          "The list of global (non-section) devices.";
+        uses common-device-pars;
+        leaf type {
+          mandatory "true";
+          type identityref {
+            base global-device;
+          }
+          description
+            "Type of the global device.";
+        }
+      }
+    }
+    list section {
+      description
+        "The list of configured sections.";
+      key "name";
+      leaf name {
+        type string;
+        description
+          "Unique name of the section.";
+      }
+      uses description;
+      leaf report-mail {
+        type email-address;
+        description
+          "Email address to which reports about the section are
+           sent.";
+      }
+      container alarm {
+        description
+          "Actions to be performed upon alarm events in the
+           section.";
+        uses common-actions;
+        leaf ignore {
+          type boolean;
+          default "false";
+          description
+            "If this flag is set to true, all alarms are ignored in
+             the section.";
+        }
+        leaf-list activate {
+          type leafref {
+            path "/securris/global/device/id";
+          }
+          description
+            "List of global devices to activate in case of alarm.";
+        }
+      }
+      container arm {
+        description
+          "Actions to be performed upon arm/disarm events in the
+           section.";
+        uses common-actions;
+      }
+      list device {
+        key "id";
+        description
+          "The list of devices in the zone.";
+        uses common-device-pars;
+        leaf type {
+          mandatory "true";
+          type identityref {
+            base section-device;
+          }
+          description
+            "Type of the section device.";
+        }
+        leaf delay {
+          type uint32;
+          units "seconds";
+          default "0";
+          description
+            "Delay before activation.";
+        }
+        leaf-list confirm {
+          type leafref {
+            path "../../device/id";
+          }
+          must "not(. = ../id)" {
+            error-message "Self-confirmation is not allowed.";
+          }
+          description
+            "The list of devices that need to confirm an alarm.";
+        }
+        leaf ignore-events {
+          type bits {
+            bit panic {
+              position "0";
+            }
+            bit tamper {
+              position "1";
+            }
+          }
+          description
+            "Flags indicating which events are to be ignored by the
+             device.";
+        }
+      }
+    }
+  }
+}

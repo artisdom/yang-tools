@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module name="securris"
+        xmlns="urn:ietf:params:xml:ns:yang:yin:1"
+        xmlns:srr="http://www.nic.cz/ns/securris"
+	xmlns:h="http://www.w3.org/1999/xhtml">
+  <namespace uri="http://www.nic.cz/ns/securris"/>
+  <prefix value="srr"/>
+
+  <import module="ietf-inet-types">
+    <prefix value="inet"/>
+  </import>
+
+  <organization>
+    <text>CZ.NIC, z. s. p. o.</text>
+  </organization>
+  <contact>
+    <text>
+      Ladislav Lhotka &lt;mailto:lhotka@nic.cz&gt;
+    </text>
+  </contact>
+  <description>
+    <text>
+      This YANG module defines the data model for Turris smart home
+      gateway.
+    </text>
+  </description>
+
+  <revision date="2015-03-02">
+    <description>
+      <text>Initial revision.</text>
+    </description>
+  </revision>
+
+  <!-- Identities -->
+
+  <identity name="device-type">
+    <description>
+      <text>
+	Base identity from which specific device types are derived.
+      </text>
+    </description>
+  </identity>
+
+  <identity name="global-device">
+    <description>
+      <text>
+	Base identity from which global device types are derived.
+      </text>
+    </description>
+    <base name="device-type"/>
+  </identity>
+
+  <identity name="section-device">
+    <description>
+      <text>
+	Base identity from which section-wise device types are
+	derived.
+      </text>
+    </description>
+    <base name="device-type"/>
+  </identity>
+
+  <identity name="siren">
+    <description>
+      <text>Siren device.</text>
+    </description>
+    <base name="global-device"/>
+  </identity>
+
+  <identity name="relay">
+    <description>
+      <text>Relay device.</text>
+    </description>
+    <base name="global-device"/>
+  </identity>
+  
+  <identity name="key-fob">
+    <description>
+      <text>Remote controller.</text>
+    </description>
+    <base name="section-device"/>
+  </identity>
+
+  <identity name="PIR">
+    <description>
+      <text>Passive infrared sensor.</text>
+    </description>
+    <base name="section-device"/>
+  </identity>
+
+  <identity name="door-sensor">
+    <description>
+      <text>Magnetic door sensor.</text>
+    </description>
+    <base name="section-device"/>
+  </identity>
+
+  <identity name="smoke-detector">
+    <description>
+      <text>Smoke detector.</text>
+    </description>
+    <base name="section-device"/>
+  </identity>
+
+  <!-- Typedefs -->
+  
+  <typedef name="email-address">
+    <type name="string">
+      <pattern value="[\-_.a-zA-Z0-9]+@[\-_.a-zA-Z0-9]+(\.[\-_.a-zA-Z0-9]+)*"/>
+    </type>
+    <description>
+      <text>Valid format of an email address.</text>
+    </description>
+  </typedef>
+
+  <typedef name="phone-number">
+    <type name="string">
+      <pattern value="\+?[0-9]+(-[0-9]+)*"/>
+    </type>
+    <description>
+      <text>Valid format of a phone number.</text>
+    </description>
+  </typedef>
+  
+  <!-- Groupings -->
+
+  <grouping name="description">
+    <leaf name="description">
+      <type name="string"/>
+      <description>
+	<text>Textual description of an object.</text>
+      </description>
+    </leaf>
+  </grouping>
+
+  <grouping name="common-device-pars">
+    <description>
+      <text>Common device parameters</text>
+    </description>
+    <leaf name="id">
+      <type name="string">
+	<pattern value="[0-9]{1,8}"/>
+      </type>
+      <description>
+	<text>Identifier of the device.</text>
+      </description>
+    </leaf>
+    <uses name="description"/>
+    <leaf name="lost-after">
+      <type name="uint32"/>
+      <units name="seconds"/>
+      <default value="300"/>
+      <description>
+	<text>
+	  <h:p>The time interval after receiving the last beacon when
+	  the device is considered dead.</h:p>
+	  <h:p>Value of 0 means that the device sends no
+	  beacons.</h:p>
+	</text>
+      </description>
+    </leaf>
+  </grouping>
+
+  <grouping name="common-actions">
+    <description>
+      <text>
+	Common actions that can be performed in reaction to events.
+      </text>
+    </description>
+    <leaf name="mail">
+      <type name="email-address"/>
+      <description>
+	<text>Send an email.</text>
+      </description>
+    </leaf>
+    <leaf name="sms">
+      <type name="phone-number"/>
+      <description>
+	<text>Send a text message.</text>
+      </description>
+    </leaf>
+    <leaf name="command">
+      <type name="string"/>
+      <description>
+	<text>
+	  Execute a shell command.
+	</text>
+      </description>
+    </leaf>
+  </grouping>
+  
+  <!-- Configuration data -->
+
+  <container name="securris">
+    <description>
+      <text>Securris gateway configuration.</text>
+    </description>
+    <container name="global">
+      <description>
+	<text>Global configuration.</text>
+      </description>
+      <leaf name="dump-target">
+	<description>
+	  <text>Location for dumps.</text>
+	</description>
+	<type name="inet:uri"/>
+	<default value="file:///tmp/securris-dump.log"/>
+      </leaf>
+      <list name="device">
+	<key value="id"/>
+	<description>
+	  <text>The list of global (non-section) devices.</text>
+	</description>
+	<uses name="common-device-pars"/>
+	<leaf name="type">
+	  <mandatory value="true"/>
+	  <type name="identityref">
+	    <base name="global-device"/>
+	  </type>
+	  <description>
+	    <text>Type of the global device.</text>
+	  </description>
+	</leaf>
+      </list>
+    </container>
+    <list name="section">
+      <description>
+	<text>The list of configured sections.</text>
+      </description>
+      <key value="name"/>
+      <leaf name="name">
+	<type name="string"/>
+	<description>
+	  <text>Unique name of the section.</text>
+	</description>
+      </leaf>
+      <uses name="description"/>
+      <leaf name="report-mail">
+	<type name="email-address"/>
+	<description>
+	  <text>
+	    Email address to which reports about the section are sent.
+	  </text>
+	</description>
+      </leaf>
+      <container name="alarm">
+	<description>
+	  <text>
+	    Actions to be performed upon alarm events in the section.
+	  </text>
+	</description>
+	<uses name="common-actions"/>
+	<leaf name="ignore">
+	  <type name="boolean"/>
+	  <default value="false"/>
+	  <description>
+	    <text>
+	      If this flag is set to true, all alarms are ignored in
+	      the section.
+	    </text>
+	  </description>
+	</leaf>
+	<leaf-list name="activate">
+	  <type name="leafref">
+	    <path value="/securris/global/device/id"/>
+	  </type>
+	  <description>
+	    <text>
+	      List of global devices to activate in case of alarm.
+	    </text>
+	  </description>
+	</leaf-list>
+      </container>
+      <container name="arm">
+	<description>
+	  <text>
+	    Actions to be performed upon arm/disarm events in the
+	    section.
+	  </text>
+	</description>
+	<uses name="common-actions"/>
+      </container>
+      <list name="device">
+	<key value="id"/>
+	<description>
+	  <text>
+	    The list of devices in the zone.
+	  </text>
+	</description>
+	<uses name="common-device-pars"/>
+	<leaf name="type">
+	  <mandatory value="true"/>
+	  <type name="identityref">
+	    <base name="section-device"/>
+	  </type>
+	  <description>
+	    <text>Type of the section device.</text>
+	  </description>
+	</leaf>
+	<leaf name="delay">
+	  <type name="uint32"/>
+	  <units name="seconds"/>
+	  <default value="0"/>
+	  <description>
+	    <text>Delay before activation.</text>
+	  </description>
+	</leaf>
+	<leaf-list name="confirm">
+	  <type name="leafref">
+	    <path value="../../device/id"/>
+	  </type>
+	  <must condition="not(. = ../id)">
+	    <error-message>
+	      <value>Self-confirmation is not allowed.</value>
+	    </error-message>
+	  </must>
+	  <description>
+	    <text>
+	      The list of devices that need to confirm an alarm.
+	    </text>
+	  </description>
+	</leaf-list>
+	<leaf name="ignore-events">
+	  <type name="bits">
+	    <bit name="panic">
+	      <position value="0"/>
+	    </bit>
+	    <bit name="tamper">
+	      <position value="1"/>
+	    </bit>
+	  </type>
+	  <description>
+	    <text>
+	      Flags indicating which events are to be ignored by the
+	      device.
+	    </text>
+	  </description>
+	</leaf>
+      </list>
+    </list>
+  </container>
+</module>
