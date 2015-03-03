@@ -1,3 +1,4 @@
+!*.xsl
 *.rn[cg]
 *.sch
 *.dsrl
