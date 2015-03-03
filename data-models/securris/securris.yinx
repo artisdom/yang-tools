@@ -101,7 +101,7 @@
     </description>
     <base name="section-device"/>
   </identity>
-
+  
   <!-- Typedefs -->
   
   <typedef name="email-address">
@@ -120,6 +120,65 @@
     <description>
       <text>Valid format of a phone number.</text>
     </description>
+  </typedef>
+
+  <typedef name="event">
+    <type name="enumeration">
+      <enum name="default">
+	<description>
+	  <text>unspecified event</text>
+	</description>
+	<value value="0"/>
+      </enum>
+      <enum name="alarm">
+	<description>
+	  <text>alarm event</text>
+	</description>
+	<value value="1"/>
+      </enum>
+      <enum name="arm">
+	<description>
+	  <text>arm/disarm event</text>
+	</description>
+	<value value="2"/>
+      </enum>
+      <enum name="button">
+	<description>
+	  <text>button-pressed event</text>
+	</description>
+	<value value="3"/>
+      </enum>
+      <enum name="defect">
+	<description>
+	  <text>defect event</text>
+	</description>
+	<value value="4"/>
+      </enum>
+      <enum name="low-battery">
+	<description>
+	  <text>low-battery event</text>
+	</description>
+	<value value="5"/>
+      </enum>
+      <enum name="panic">
+	<description>
+	  <text>panic event</text>
+	</description>
+	<value value="6"/>
+      </enum>
+      <enum name="sensor-lost">
+	<description>
+	  <text>sensor-lost event</text>
+	</description>
+	<value value="7"/>
+      </enum>
+      <enum name="tamper">
+	<description>
+	  <text>tamper event</text>
+	</description>
+	<value value="8"/>
+      </enum>
+    </type>
   </typedef>
   
   <!-- Groupings -->
@@ -161,34 +220,6 @@
     </leaf>
   </grouping>
 
-  <grouping name="common-actions">
-    <description>
-      <text>
-	Common actions that can be performed in reaction to events.
-      </text>
-    </description>
-    <leaf name="mail">
-      <type name="email-address"/>
-      <description>
-	<text>Send an email.</text>
-      </description>
-    </leaf>
-    <leaf name="sms">
-      <type name="phone-number"/>
-      <description>
-	<text>Send a text message.</text>
-      </description>
-    </leaf>
-    <leaf name="command">
-      <type name="string"/>
-      <description>
-	<text>
-	  Execute a shell command.
-	</text>
-      </description>
-    </leaf>
-  </grouping>
-  
   <!-- Configuration data -->
 
   <container name="securris">
@@ -235,28 +266,32 @@
 	</description>
       </leaf>
       <uses name="description"/>
-      <leaf name="report-mail">
-	<type name="email-address"/>
+      <list name="event-actions">
+	<key value="event"/>
 	<description>
 	  <text>
-	    Email address to which reports about the section are sent.
+	    <h:p>Configuration of actions to be performed in response
+	    to events.</h:p>
+	    <h:p>If the 'default' event is configured, then its
+	    actions are used as the default for events that are not
+	    explicitly configured.</h:p>
 	  </text>
 	</description>
-      </leaf>
-      <container name="alarm">
-	<description>
-	  <text>
-	    Actions to be performed upon alarm events in the section.
-	  </text>
-	</description>
-	<uses name="common-actions"/>
+	<leaf name="event">
+	  <type name="event"/>
+	  <description>
+	    <text>
+	      The event for which actions are configured.
+	    </text>
+	  </description>
+	</leaf>
 	<leaf name="ignore">
 	  <type name="boolean"/>
 	  <default value="false"/>
 	  <description>
 	    <text>
-	      If this flag is set to true, all alarms are ignored in
-	      the section.
+	      If this flag is set to true, the event is ignored in
+	      within the section even if other actions are configured.
 	    </text>
 	  </description>
 	</leaf>
@@ -266,20 +301,33 @@
 	  </type>
 	  <description>
 	    <text>
-	      List of global devices to activate in case of alarm.
+	      List of global devices to activate in response to the event.
 	    </text>
 	  </description>
 	</leaf-list>
-      </container>
-      <container name="arm">
-	<description>
-	  <text>
-	    Actions to be performed upon arm/disarm events in the
-	    section.
-	  </text>
-	</description>
-	<uses name="common-actions"/>
-      </container>
+	<leaf name="mail">
+	  <type name="email-address"/>
+	  <description>
+	    <text>Send an email in response to the event.</text>
+	  </description>
+	</leaf>
+	<leaf name="sms">
+	  <type name="phone-number"/>
+	  <description>
+	    <text>Send a text message in response to the event.</text>
+	  </description>
+	</leaf>
+	<leaf name="command">
+	  <type name="string"/>
+	  <description>
+	    <text>
+	      <h:p>Execute a shell command in response to the event.</h:p>
+	      <h:p>The value is is a complete command with
+	      parameters.</h:p>
+	    </text>
+	  </description>
+	</leaf>
+      </list>
       <list name="device">
 	<key value="id"/>
 	<description>
@@ -320,22 +368,15 @@
 	    </text>
 	  </description>
 	</leaf-list>
-	<leaf name="ignore-events">
-	  <type name="bits">
-	    <bit name="panic">
-	      <position value="0"/>
-	    </bit>
-	    <bit name="tamper">
-	      <position value="1"/>
-	    </bit>
-	  </type>
+	<leaf-list name="ignore-events">
+	  <type name="event"/>
 	  <description>
 	    <text>
-	      Flags indicating which events are to be ignored by the
-	      device.
+	      List of events generated by the device that are to be
+	      ignored.
 	    </text>
 	  </description>
-	</leaf>
+	</leaf-list>
       </list>
     </list>
   </container>
