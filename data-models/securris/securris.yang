@@ -31,52 +31,52 @@ module securris {
   }
 
   identity global-device {
+    base device-type;
     description
       "Base identity from which global device types are derived.";
-    base device-type;
   }
 
   identity section-device {
+    base device-type;
     description
       "Base identity from which section-wise device types are
        derived.";
-    base device-type;
   }
 
   identity siren {
+    base global-device;
     description
       "Siren device.";
-    base global-device;
   }
 
   identity relay {
+    base global-device;
     description
       "Relay device.";
-    base global-device;
   }
 
   identity key-fob {
+    base section-device;
     description
       "Remote controller.";
-    base section-device;
   }
 
   identity PIR {
+    base section-device;
     description
       "Passive infrared sensor.";
-    base section-device;
   }
 
   identity door-sensor {
+    base section-device;
     description
       "Magnetic door sensor.";
-    base section-device;
   }
 
   identity smoke-detector {
+    base section-device;
     description
       "Smoke detector.";
-    base section-device;
   }
 
   /* Typedefs */
@@ -100,49 +100,49 @@ module securris {
   typedef event {
     type enumeration {
       enum default {
+        value "0";
         description
           "unspecified event";
-        value "0";
       }
       enum alarm {
+        value "1";
         description
           "alarm event";
-        value "1";
       }
       enum arm {
+        value "2";
         description
           "arm/disarm event";
-        value "2";
       }
       enum button {
+        value "3";
         description
           "button-pressed event";
-        value "3";
       }
       enum defect {
+        value "4";
         description
           "defect event";
-        value "4";
       }
       enum low-battery {
+        value "5";
         description
           "low-battery event";
-        value "5";
       }
       enum panic {
+        value "6";
         description
           "panic event";
-        value "6";
       }
       enum sensor-lost {
+        value "7";
         description
           "sensor-lost event";
-        value "7";
       }
       enum tamper {
+        value "8";
         description
           "tamper event";
-        value "8";
       }
     }
   }
@@ -189,10 +189,10 @@ module securris {
       description
         "Global configuration.";
       leaf dump-target {
-        description
-          "Location for dumps.";
         type inet:uri;
         default "file:///tmp/securris-dump.log";
+        description
+          "Location for dumps.";
       }
       list device {
         key "id";
@@ -200,19 +200,19 @@ module securris {
           "The list of global (non-section) devices.";
         uses common-device-pars;
         leaf type {
-          mandatory "true";
           type identityref {
             base global-device;
           }
+          mandatory "true";
           description
             "Type of the global device.";
         }
       }
     }
     list section {
+      key "name";
       description
         "The list of configured sections.";
-      key "name";
       leaf name {
         type string;
         description
@@ -273,10 +273,10 @@ module securris {
           "The list of devices in the zone.";
         uses common-device-pars;
         leaf type {
-          mandatory "true";
           type identityref {
             base section-device;
           }
+          mandatory "true";
           description
             "Type of the section device.";
         }
