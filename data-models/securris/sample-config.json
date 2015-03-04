@@ -114,7 +114,7 @@
           "description": "Turns off Milky Way."
         }
       ],
-      "dump-target": "/tmp/securris/"
+      "dump-target": "/tmp/securris/dump.log"
     }
   }
 }
