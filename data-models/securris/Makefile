@@ -2,21 +2,20 @@ MODULES = securris
 ymod = $(addsuffix .yang, $(MODULES))
 TARGET ?= config
 BASE ?= sample
-Y2Y = ~/Projects/YANG/yang-tools/xslt/yin2yang.xsl
-PYANGDIR = /Users/lhotka/Projects/pyang
+xsltdir = ../../xslt
 bn = $(BASE)-$(TARGET)
-xsltdir = $(PYANGDIR)/xslt
 schemas = $(bn).rng $(BASE)-gdefs-config.rng $(bn)-dsrl.xsl $(bn)-sch.xsl
 tgt = --stringparam target $(TARGET)
 rngparms =  $(tgt) --stringparam basename $(BASE) --stringparam schema-dir \
-	$(PYANGDIR)/schema $(xsltdir)/gen-relaxng.xsl
+	$(PYANG_RNG_LIBDIR) $(PYANG_XSLT_DIR)/gen-relaxng.xsl
 Y2DOPTS = -t $(TARGET) -b $(BASE)
 .PHONY = clean
 
 all: $(schemas) $(bn).rnc model.tree model.xsl
 
 %.yang: %.yinx
-	@xsltproc --output $@ $(Y2Y) $<
+	@xsltproc $(xsltdir)/canonicalize.xsl $< | \
+	xsltproc --output $@ $(xsltdir)/yin2yang.xsl -
 
 $(bn).xml: model.jtox $(bn).json
 	@json2xml -t $(TARGET) -o $@ $^
@@ -43,18 +42,18 @@ $(bn).rnc: $(bn).rng $(BASE)-gdefs-config.rng
 	@trang -I rng -O rnc $< $@
 
 $(bn)-dsrl.xsl: $(bn).dsdl
-	@xsltproc $(tgt) $(xsltdir)/gen-dsrl.xsl $< | \
-	xsltproc --output $@ $(xsltdir)/dsrl2xslt.xsl -
+	@xsltproc $(tgt) $(PYANG_XSLT_DIR)/gen-dsrl.xsl $< | \
+	xsltproc --output $@ $(PYANG_XSLT_DIR)/dsrl2xslt.xsl -
 
 $(bn)-sch.xsl: $(bn).dsdl
-	@xsltproc $(tgt) $(xsltdir)/gen-schematron.xsl $< | \
-	xsltproc $(xsltdir)/iso_abstract_expand.xsl - | \
-        xsltproc -o $@ $(xsltdir)/iso_svrl_for_xslt1.xsl -
+	@xsltproc $(tgt) $(PYANG_XSLT_DIR)/gen-schematron.xsl $< | \
+	xsltproc $(PYANG_XSLT_DIR)/iso_abstract_expand.xsl - | \
+        xsltproc -o $@ $(PYANG_XSLT_DIR)/iso_svrl_for_xslt1.xsl -
 
 validate: $(bn).xml $(schemas)
 	@jing $(bn).rng $<
 	@xsltproc $(bn)-dsrl.xsl $< | xsltproc $(bn)-sch.xsl - | \
-	xsltproc $(xsltdir)/svrl2text.xsl -
+	xsltproc $(PYANG_XSLT_DIR)/svrl2text.xsl -
 
 clean:
 	@rm -f $(schemas) $(bn).xml *.dsdl model.* *.rnc
