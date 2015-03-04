@@ -11,7 +11,7 @@ rngparms =  $(tgt) --stringparam basename $(BASE) --stringparam schema-dir \
 Y2DOPTS = -t $(TARGET) -b $(BASE)
 .PHONY = clean
 
-all: $(schemas) $(bn).rnc model.tree model.xsl
+all: $(schemas) model.tree model.xsl
 
 %.yang: %.yinx
 	@xsltproc $(xsltdir)/canonicalize.xsl $< | \
