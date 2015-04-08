@@ -1,8 +1,8 @@
 module securris {
 
-  namespace "http://www.nic.cz/ns/securris";
+  namespace "http://www.nic.cz/ns/router/securris";
 
-  prefix "srr";
+  prefix "securris";
 
   import ietf-inet-types {
     prefix "inet";

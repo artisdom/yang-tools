@@ -3,8 +3,8 @@
         xmlns="urn:ietf:params:xml:ns:yang:yin:1"
         xmlns:srr="http://www.nic.cz/ns/securris"
 	xmlns:h="http://www.w3.org/1999/xhtml">
-  <namespace uri="http://www.nic.cz/ns/securris"/>
-  <prefix value="srr"/>
+  <namespace uri="http://www.nic.cz/ns/router/securris"/>
+  <prefix value="securris"/>
 
   <import module="ietf-inet-types">
     <prefix value="inet"/>
