@@ -42,4 +42,53 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     </choose>
   </template>
 
+  <template match="rt:description">
+    <call-template name="indent"/>
+    <text>description&#xA;</text>
+    <variable name="qchar">"</variable>
+    <variable name="prf">
+      <call-template name="indent">
+	<with-param name="level" select="2"/>
+      </call-template>
+    </variable>
+    <value-of select="concat($prf,$qchar)"/>
+    <call-template name="fill-text">
+      <with-param name="text">
+	<value-of select="normalize-space(.)"/>
+	<value-of select="concat($qchar,';&#xA;')"/>
+      </with-param>
+      <with-param
+	  name="length"
+	  select="$line-length - string-length($prf) - 1"/>
+      <with-param name="prefix" select="concat($prf,' ')"/>
+      <with-param name="at-start" select="true()"/>
+    </call-template>
+  </template>
+
+  <template match="rt:enabled">
+    <call-template name="stmt-leaf">
+      <with-param name="level" select="1"/>
+      <with-param name="kw">disabled</with-param>
+      <with-param name="arg">
+	<choose>
+	  <when test=". = 'false'">yes</when>
+	  <otherwise>no</otherwise>
+	</choose>
+      </with-param>
+      <with-param name="dflt">no</with-param>
+    </call-template>
+  </template>
+
+  <template match="rt:rib">
+    <variable name="rtbl"
+	      select="$rt-root/rt:ribs/rt:rib[rt:name = current()]"/>
+    <if test="$rtbl/rt:address-family = $address-family">
+      <call-template name="stmt-leaf">
+	<with-param name="level" select="1"/>
+	<with-param name="kw">table</with-param>
+	<with-param name="arg" select="."/>
+      </call-template>
+    </if>
+  </template>
+
 </stylesheet>

@@ -39,16 +39,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <variable name="address-family"
 	    select="concat('v', $ip-version, 'ur:ipv', $ip-version,
 		    '-unicast')"/>
-  <variable name="root" select="//nc:*/rt:routing"/>
+  <variable name="rt-root" select="//nc:*/rt:routing"/>
+  <variable name="rt-root" select="//nc:*/if:interfaces"/>
   <!-- Name of the routing instance to process (first enabled entry of
        the routing-instance list is used by default) -->
   <param name="inst-name"
-	 select="$root/rt:routing-instance
+	 select="$rt-root/rt:routing-instance
 		 [rt:type=concat('bird:bird-ipv',$ip-version)][1]/rt:name"/>
-  <variable
-      name="default-rib"
-      select="$root/rt:routing-instance[rt:name=$inst-name]/rt:default-ribs
-	      /rt:default-rib[rt:address-family=$address-family]/rt:rib-name"/>
 
   <include href="../common-templates.xsl"/>
   <include href="bird-global.xsl"/>
@@ -58,6 +55,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <include href="bird-device.xsl"/>
   <include href="bird-pipe.xsl"/>
 
+  <!-- Named templates -->
+  
   <template name="close-block">
     <param name="level" select="0"/>
     <param name="semi"/>
@@ -185,7 +184,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<value-of select="$ip-version"/>
       </message>
     </if>
-    <apply-templates select="$root"/>
+    <apply-templates select="$rt-root"/>
   </template>
 
   <template match="rt:routing">
@@ -202,40 +201,51 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <text> BIRD daemon
  * (generated automatically from XML configuration)
  */
-
 </text>
-    <apply-templates
-	select="rt:ribs/rt:rib[rt:address-family = $address-family]"/>
-    <apply-templates
-	select="rt:ribs/rt:rib[rt:address-family = $address-family]"
-	mode="pipe"/>
     <apply-templates select="$inst"/>
-    <apply-templates select="rt:route-filters/rt:route-filter"/>
-  </template>
-
-  <template match="rt:rib">
-    <call-template name="stmt-leaf">
-      <with-param name="kw">table</with-param>
-      <with-param name="arg" select="rt:name"/>
-      <with-param name="dflt" select="$default-rib"/>
-    </call-template>
   </template>
 
   <template match="rt:routing-instance">
     <apply-templates select="bird:bird-config"/>
     <apply-templates select="rt:router-id"/>
-    <apply-templates select="rt:interfaces" mode="device"/>
-    <apply-templates select="rt:interfaces"/>
+    <if test="$ip-version = 6 and $if-root/if:interface[if:name = ">
+      <apply-templates select="rt:interfaces" mode="radv"/>
+    </if>
+	      v6ur:ipv6-router-advertisements/
+	      v6ur:send-advertisements = 'true'">
+      <call-template name="stmt-block">
+	<with-param name="kw">protocol</with-param>
+	<with-param name="arg">radv</with-param>
+      </call-template>
+      <apply-templates
+	  select="rt:interface[v6ur:ipv6-router-advertisements/
+		  v6ur:send-advertisements = 'true']"
+	  mode="radv"/>
+    </if>
     <apply-templates select="rt:routing-protocols/rt:routing-protocol"/>
-  </template>
-
-  <template match="rt:router-id">
-    <call-template name="stmt-leaf">
-      <with-param name="kw">router id</with-param>
-    </call-template>
+    <apply-templates
+	select="rt:ribs/rt:rib[rt:address-family = $address-family]"/>
   </template>
 
   <template match="rt:interfaces">
+    <call-template name="stmt-block">
+      <with-param name="kw">protocol</with-param>
+      <with-param name="kw">device</with-param>
+    </call-template>
+    <apply-templates select="bird:scan-time"/>
+    <call-template name="close-block"/>
+    <if test="$if-root/if:interface[if:name = rt:interface]/
+	      ip:ipv6/v6ur:ipv6-router-advertisements">
+      <call-template name="stmt-block">
+	<with-param name="kw">protocol</with-param>
+	<with-param name="kw">radv</with-param>
+      </call-template>
+      <apply-templates select="
+    </if>
+  </template>
+
+  <template match="rt:interfaces">
+    <if test="rt:interface">
     <call-template name="stmt-block">
       <with-param name="kw">protocol</with-param>
       <with-param name="arg">direct</with-param>
@@ -252,109 +262,32 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       </with-param>
     </call-template>
     <call-template name="close-block"/>
-    <if test="$ip-version = 6 and rt:interface/
-	      v6ur:ipv6-router-advertisements/
-	      v6ur:send-advertisements = 'true'">
-      <call-template name="stmt-block">
-	<with-param name="kw">protocol</with-param>
-	<with-param name="arg">radv</with-param>
-      </call-template>
-      <apply-templates
-	  select="rt:interface[v6ur:ipv6-router-advertisements/
-		  v6ur:send-advertisements = 'true']"
-	  mode="radv"/>
+      
     </if>
   </template>
-
-  <!-- Common protocol parameters -->
-
-  <template match="rt:description">
-    <call-template name="indent"/>
-    <text>description&#xA;</text>
-    <variable name="qchar">"</variable>
-    <variable name="prf">
-      <call-template name="indent">
-	<with-param name="level" select="2"/>
-      </call-template>
-    </variable>
-    <value-of select="concat($prf,$qchar)"/>
-    <call-template name="fill-text">
-      <with-param name="text">
-	<value-of select="normalize-space(.)"/>
-	<value-of select="concat($qchar,';&#xA;')"/>
-      </with-param>
-      <with-param
-	  name="length"
-	  select="$line-length - string-length($prf) - 1"/>
-      <with-param name="prefix" select="concat($prf,' ')"/>
-      <with-param name="at-start" select="true()"/>
-    </call-template>
-  </template>
-
-  <template match="rt:enabled">
+  
+  <template match="rt:rib">
     <call-template name="stmt-leaf">
-      <with-param name="level" select="1"/>
-      <with-param name="kw">disabled</with-param>
-      <with-param name="arg">
-	<choose>
-	  <when test=". = 'false'">yes</when>
-	  <otherwise>no</otherwise>
-	</choose>
-      </with-param>
-      <with-param name="dflt">no</with-param>
-    </call-template>
-  </template>
-
-  <template match="rt:connected-rib">
-    <variable name="rtbl"
-	      select="$root/rt:ribs/
-		      rt:rib[rt:name = current()/rt:rib-name]"/>
-    <if test="$rtbl/rt:address-family = $address-family">
-      <call-template name="stmt-leaf">
-	<with-param name="level" select="1"/>
-	<with-param name="kw">table</with-param>
-	<with-param name="arg" select="rt:rib-name"/>
-	<with-param name="dflt" select="$default-rib"/>
-      </call-template>
-      <apply-templates select="rt:import-filter"/>
-    </if>
-  </template>
-
-  <template match="rt:import-filter">
-    <call-template name="stmt-leaf">
-      <with-param name="level" select="1"/>
-      <with-param name="kw">import filter</with-param>
-    </call-template>
-  </template>
-
-  <template match="rt:route-filter">
-    <call-template name="stmt-block">
-      <with-param name="kw">filter</with-param>
+      <with-param name="kw">table</with-param>
       <with-param name="arg" select="rt:name"/>
     </call-template>
-    <apply-templates select="rt:type"/>
-    <call-template name="close-block"/>
   </template>
 
-  <template
-      match="rt:route-filter/rt:type[. = 'rt:allow-all-route-filter']">
+  <template match="rt:router-id">
     <call-template name="stmt-leaf">
-      <with-param name="level" select="1"/>
-      <with-param name="kw">accept</with-param>
-      <with-param name="arg">allow all</with-param>
-      <with-param name="quoted" select="1"/>
+      <with-param name="kw">router id</with-param>
     </call-template>
   </template>
 
-  <template
-      match="rt:route-filter/rt:type[. = 'rt:deny-all-route-filter']">
+  <template match="bird:scan-time">
     <call-template name="stmt-leaf">
       <with-param name="level" select="1"/>
-      <with-param name="kw">reject</with-param>
-      <with-param name="arg">deny all</with-param>
-      <with-param name="quoted" select="1"/>
+      <with-param name="kw">scan time</with-param>
+      <with-param name="arg" select="."/>
     </call-template>
   </template>
+  
+  <template match="rt:interfaces" 
 
   <!-- Without a specific template, issue a warning. -->
   <template match="*">

@@ -4,7 +4,8 @@
     <capability>urn:ietf:params:netconf:base:1.1</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-interfaces?module=ietf-interfaces</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ip?module=ietf-ip</capability>
-    <capability>urn:ietf:params:xml:ns:yang:ietf-routing?module=ietf-routing</capability>
+    <capability>urn:ietf:params:xml:ns:yang:iana-if-type?module=iana-if-type</capability>
+    <capability>urn:ietf:params:xml:ns:yang:ietf-routing?module=ietf-routing&amp;features=router-id,multiple-ribs</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing?module=ietf-ipv4-unicast-routing</capability>
     <capability>urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing?module=ietf-ipv6-unicast-routing</capability>
     <capability>http://www.nic.cz/ns/bird?module=bird&amp;features=multiple-kernel-tables,mrtdump,route-origin</capability>

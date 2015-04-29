@@ -34,7 +34,7 @@ module bird {
   description
     "Configuration of the BIRD Internet Routing Daemon.";
 
-  revision 2013-12-24 {
+  revision 2012-10-09 {
     description
       "Initial revision.";
   }
@@ -42,7 +42,7 @@ module bird {
   /* Identities */
 
   identity bird-daemon {
-    base rt:standard-routing-instance;
+    base rt:routing-instance;
   }
 
   identity bird-ipv4 {
@@ -70,21 +70,6 @@ module bird {
         description
           "The name of the routing instance to be shut down.";
       }
-    }
-  }
-
-  /* Data Nodes */
-
-  augment
-    "/rt:routing/rt:routing-instance/rt:interfaces/rt:interface" {
-    description
-      "Configuration of the 'direct' protocol.";
-    leaf enable-direct-route {
-      type boolean;
-      default "true";
-      description
-        "Enable/disable generation of the direct route for this
-         logical interface.";
     }
   }
 }
