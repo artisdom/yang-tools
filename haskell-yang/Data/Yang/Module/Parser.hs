@@ -1,8 +1,8 @@
 {-# LANGUAGE CPP, OverloadedStrings, BangPatterns #-}
 
-module Data.Yang.Parser
+module Data.Yang.Module.Parser
     (
-      yModule
+      yStatement
     ) where
 
 import Data.ByteString.Builder
@@ -13,9 +13,9 @@ import Data.ByteString.Char8 (ByteString, cons)
 import Data.Attoparsec.Combinator ((<?>))
 import Data.Monoid (mappend, mempty)
 import Data.Text (Text)
-import Data.Text.Encoding (decodeUtf8', encodeUtf8)
+import Data.Text.Encoding (decodeUtf8', decodeUtf8, encodeUtf8)
 import Data.Word (Word8)
-import Data.Yang.Types (YangKeyword, YangStatement(..))
+import Data.Yang.Module.Types (QualIdent, DataType(..), YangStatement(..))
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Data.ByteString.Lazy as L
@@ -31,6 +31,8 @@ import qualified Data.Attoparsec.Zepto as Z
 #define CARRIAGE_RETURN 13
 #define CLOSE_CURLY 125
 #define COLON 58
+#define DASH 45
+#define DOT 46
 #define DOUBLE_QUOTE 34
 #define LINE_FEED 10
 #define OPEN_CURLY 123
@@ -40,18 +42,65 @@ import qualified Data.Attoparsec.Zepto as Z
 #define SPACE 32
 #define TAB 9
 
-yModule :: Parser YangStatement
-yModule = do
-    optSep
-    m <- yStatement
-    let kw = snd $ keyword m
-    if fst (keyword m) /= Nothing || kw /= "module" && kw /= "submodule"
-        then fail "needs 'module' or 'submodule'"
-        else optSep >> A.endOfInput >> return m
+toText :: String -> Parser ByteString -> Parser Text
+toText name p = (decodeUtf8 <$> p) <?> name
+
+identifier :: Parser Text
+identifier = do
+    first <- C.satisfy (C.inClass "a-zA-Z_") <?> "identifier"
+    rest <- C.takeWhile (C.inClass "a-zA-Z0-9._-") <?> "identifier"
+    let id = decodeUtf8 (cons first rest)
+    if T.length id < 3 || (T.toUpper . T.take 3) id /= "XML"
+        then return id
+        else fail "cannot start with XML (any case)." <?> "identifier"
+
+trueFalse :: Parser Text
+trueFalse = toText "trueFalse" $ C.string "true" <|> C.string "false"
+
+yangVersion :: Parser Text
+yangVersion = do
+    major <- C.digit <?> "major version"
+    A.word8 DOT <?> "decimal dot"
+    minor <- C.digit <?> "minor version"
+    return $ T.pack [major, '.', minor]
+
+qualIdent :: Parser Text 
+qualIdent = do
+    x <- identifier
+    next <- A.peekWord8'
+    if next == COLON
+        then do
+            A.word8 COLON
+            y <- identifier
+            return $ T.concat [x, ":", y]
+        else
+            return x
+
+revDate :: Parser Text
+revDate = do
+    y <- C.count 4 C.digit
+    A.word8 DASH
+    m <- C.count 2 C.digit
+    A.word8 DASH
+    d <- C.count 2 C.digit
+    let y' = read y :: Int
+    let d' = read d :: Int
+    if d' > 0 && y' >= 2000 && dateCheck y' m d'
+        then return $ T.pack $ y ++ ('-' : m) ++ ('-' : d)
+        else fail "wrong date" <?> "revDate"
+      where
+        dateCheck y' m d'
+            | m `elem` ["01", "03", "05", "07", "08", "10", "12"] = d' <= 31
+            | m `elem` ["04", "06", "09", "11"] = d' <= 30
+            | m == "02" = d' <= 28 || d' == 29 &&
+                (y' `mod` 4 == 0 && y' `mod` 100 /= 0 || y' `mod` 400 == 0)
+            | otherwise = False
+
+-- range :: Parser Text
 
 yStatement :: Parser YangStatement
 yStatement = do
-    k <- yKeyword
+    k <- qualIdent
     a <- yArgument
     optSep
     next <- A.anyWord8
@@ -84,24 +133,6 @@ yArgument' = do
         SINGLE_QUOTE -> qString
         DOUBLE_QUOTE -> dqString
         _            -> uString
-
-yIdentifier :: Parser ByteString
-yIdentifier = do
-    first <- C.satisfy $ C.inClass "a-zA-Z_"
-    rest <- C.takeWhile $ C.inClass "a-zA-Z0-9._-"
-    return $ cons first rest
-
-yKeyword :: Parser YangKeyword
-yKeyword = do
-    x <- yIdentifier
-    next <- A.peekWord8'
-    if next == COLON
-        then do
-            A.word8 COLON
-            y <- yIdentifier
-            return (Just x, y)
-        else
-            return (Nothing, x)
 
 uString :: Parser Text
 uString = do
