@@ -107,7 +107,7 @@ yStatement = do
     ss <- case next of
               SEMICOLON  -> return []
               OPEN_CURLY -> ySub
-              _          -> fail "statement not properly terminated"
+              _          -> fail ("statement not properly terminated " ++ show next)
     return $ YSt k a ss
 
 ySub :: Parser [YangStatement]
