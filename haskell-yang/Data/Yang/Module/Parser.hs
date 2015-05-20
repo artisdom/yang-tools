@@ -43,6 +43,17 @@ import qualified Data.Attoparsec.Zepto as Z
 #define SPACE 32
 #define TAB 9
 
+yModule :: Parser Module
+yModule = do
+    optSep
+    s <- statement
+    optSep
+    A.endOfInput
+    case kw s of
+        BuiltIn "module"    -> return $ Module (arg s) (stmts s)
+        BuiltIn "submodule" -> return $ Submodule (arg s) (stmts s)
+        _                   -> fail "missing '(sub)module' keyword"
+
 statement :: Parser Statement
 statement = do
     k <- keyword
@@ -54,17 +65,6 @@ statement = do
               OPEN_CURLY -> substatements
               _          -> fail ("statement not properly terminated " ++ show next)
     return $ Statement k a ss
-
-yModule :: Parser Module
-yModule = do
-    optSep
-    s <- statement
-    optSep
-    A.endOfInput
-    case kw s of
-        BuiltIn "module"    -> return $ Module (arg s) (stmts s)
-        BuiltIn "submodule" -> return $ Submodule (arg s) (stmts s)
-        _                   -> fail "missing '(sub)module' keyword"
 
 keyword :: Parser Keyword 
 keyword = do
@@ -167,20 +167,20 @@ dqString' = do
         else return s
 
 unescape :: Z.Parser B.ByteString
-unescape = toByteString <$> go mempty where
+unescape = toByteString <$> go mempty
+  where
     go acc = do
         h <- Z.takeWhile (/= BACKSLASH)
-        let rest = do
-                start <- Z.take 2
-                let !slash = B.unsafeHead start
-                    !t = B.unsafeIndex start 1
-                    escape = case B.findIndex (== t) "\"\\nt" of
-                        Just i -> i
-                        _      -> 255
-                if slash /= BACKSLASH || escape == 255
-                    then fail "invalid escape sequence"
-                    else go (acc `mappend` byteString h `mappend`
-                        word8 (B.unsafeIndex "\"\\\n\t" escape))
+        let
+          rest = do
+            eseq <- Z.take 2
+            let next w = go $ acc `mappend` byteString h `mappend` word8 w
+            case B.last eseq of
+                DOUBLE_QUOTE -> next DOUBLE_QUOTE
+                BACKSLASH    -> next BACKSLASH
+                110          -> next LINE_FEED
+                116          -> next TAB
+                _            -> fail "invalid escape sequence"
         done <- Z.atEnd
         if done
             then return (acc `mappend` byteString h)
