@@ -36,6 +36,7 @@ import qualified Data.Attoparsec.Zepto as Z
 #define DOUBLE_QUOTE 34
 #define LINE_FEED 10
 #define OPEN_CURLY 123
+#define PLUS 43
 #define SEMICOLON 59
 #define SINGLE_QUOTE 39
 #define SLASH 47
@@ -104,7 +105,7 @@ argument' = do
         SEMICOLON    -> return ""
         OPEN_CURLY   -> return ""
         SINGLE_QUOTE -> qString
-        DOUBLE_QUOTE -> dqString
+        DOUBLE_QUOTE -> qString
         _            -> uString
 
 uString :: Parser Text
@@ -138,15 +139,20 @@ utf8decode bs = case decodeUtf8' bs of
 
 qString :: Parser Text
 qString = do
+    ss <- (sqString <|> dqString) `A.sepBy` (optSep >> A.word8 PLUS >> optSep)
+    utf8decode $ B.concat ss
+
+sqString :: Parser B.ByteString
+sqString = do
     A.word8 SINGLE_QUOTE
     s <- A.takeWhile (/= SINGLE_QUOTE)
     A.word8 SINGLE_QUOTE
-    utf8decode s
+    return s
 
-dqString :: Parser Text
+dqString :: Parser B.ByteString
 dqString = A.word8 DOUBLE_QUOTE *> dqString'
 
-dqString' :: Parser Text
+dqString' :: Parser B.ByteString
 dqString' = do
     s <- A.scan False $
         \s c -> if s then Just False
@@ -154,16 +160,13 @@ dqString' = do
                               then Nothing
                               else Just (c == BACKSLASH)
     A.word8 DOUBLE_QUOTE
-    s1 <- if BACKSLASH `B.elem` s
-          then case Z.parse unescape s of
-              Right res -> return res
-              Left err -> fail err
-          else return s
-    case decodeUtf8' s1 of
-        Right res -> return res
-        Left err -> fail $ show err
+    if BACKSLASH `B.elem` s
+        then case Z.parse unescape s of
+            Right res -> return res
+            Left err -> fail err
+        else return s
 
-unescape :: Z.Parser ByteString
+unescape :: Z.Parser B.ByteString
 unescape = toByteString <$> go mempty where
     go acc = do
         h <- Z.takeWhile (/= BACKSLASH)
