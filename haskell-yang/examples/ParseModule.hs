@@ -9,4 +9,4 @@ main :: IO ()
 main = do args <- getArgs
           let fn = head args
           bs <- B.readFile fn
-          parseTest yStatement bs
+          parseTest yModule bs

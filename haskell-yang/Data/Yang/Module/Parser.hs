@@ -2,7 +2,7 @@
 
 module Data.Yang.Module.Parser
     (
-      yStatement
+      yModule
     ) where
 
 import Data.ByteString.Builder
@@ -15,7 +15,7 @@ import Data.Monoid (mappend, mempty)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8', decodeUtf8, encodeUtf8)
 import Data.Word (Word8)
-import Data.Yang.Module.Types (QualIdent, DataType(..), YangStatement(..))
+import Data.Yang.Module.Types (Keyword(..), Module(..), Statement(..))
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Data.ByteString.Lazy as L
@@ -42,90 +42,63 @@ import qualified Data.Attoparsec.Zepto as Z
 #define SPACE 32
 #define TAB 9
 
-toText :: String -> Parser ByteString -> Parser Text
-toText name p = (decodeUtf8 <$> p) <?> name
+statement :: Parser Statement
+statement = do
+    k <- keyword
+    a <- argument
+    optSep
+    next <- A.anyWord8
+    ss <- case next of
+              SEMICOLON  -> return []
+              OPEN_CURLY -> substatements
+              _          -> fail ("statement not properly terminated " ++ show next)
+    return $ Statement k a ss
 
-identifier :: Parser Text
-identifier = do
-    first <- C.satisfy (C.inClass "a-zA-Z_") <?> "identifier"
-    rest <- C.takeWhile (C.inClass "a-zA-Z0-9._-") <?> "identifier"
-    let id = decodeUtf8 (cons first rest)
-    if T.length id < 3 || (T.toUpper . T.take 3) id /= "XML"
-        then return id
-        else fail "cannot start with XML (any case)." <?> "identifier"
+yModule :: Parser Module
+yModule = do
+    optSep
+    s <- statement
+    optSep
+    A.endOfInput
+    case kw s of
+        BuiltIn "module"    -> return $ Module (arg s) (stmts s)
+        BuiltIn "submodule" -> return $ Submodule (arg s) (stmts s)
+        _                   -> fail "missing '(sub)module' keyword"
 
-trueFalse :: Parser Text
-trueFalse = toText "trueFalse" $ C.string "true" <|> C.string "false"
-
-yangVersion :: Parser Text
-yangVersion = do
-    major <- C.digit <?> "major version"
-    A.word8 DOT <?> "decimal dot"
-    minor <- C.digit <?> "minor version"
-    return $ T.pack [major, '.', minor]
-
-qualIdent :: Parser Text 
-qualIdent = do
+keyword :: Parser Keyword 
+keyword = do
     x <- identifier
     next <- A.peekWord8'
     if next == COLON
         then do
             A.word8 COLON
             y <- identifier
-            return $ T.concat [x, ":", y]
+            return $ Extension x y
         else
-            return x
+            return $ BuiltIn x
 
-revDate :: Parser Text
-revDate = do
-    y <- C.count 4 C.digit
-    A.word8 DASH
-    m <- C.count 2 C.digit
-    A.word8 DASH
-    d <- C.count 2 C.digit
-    let y' = read y :: Int
-    let d' = read d :: Int
-    if d' > 0 && y' >= 2000 && dateCheck y' m d'
-        then return $ T.pack $ y ++ ('-' : m) ++ ('-' : d)
-        else fail "wrong date" <?> "revDate"
-      where
-        dateCheck y' m d'
-            | m `elem` ["01", "03", "05", "07", "08", "10", "12"] = d' <= 31
-            | m `elem` ["04", "06", "09", "11"] = d' <= 30
-            | m == "02" = d' <= 28 || d' == 29 &&
-                (y' `mod` 4 == 0 && y' `mod` 100 /= 0 || y' `mod` 400 == 0)
-            | otherwise = False
+identifier :: Parser ByteString
+identifier = do
+    first <- C.satisfy (C.inClass "a-zA-Z_") <?> "identifier"
+    rest <- C.takeWhile (C.inClass "a-zA-Z0-9._-") <?> "identifier"
+    return $ cons first rest
 
--- range :: Parser Text
-
-yStatement :: Parser YangStatement
-yStatement = do
-    k <- qualIdent
-    a <- yArgument
-    optSep
-    next <- A.anyWord8
-    ss <- case next of
-              SEMICOLON  -> return []
-              OPEN_CURLY -> ySub
-              _          -> fail ("statement not properly terminated " ++ show next)
-    return $ YSt k a ss
-
-ySub :: Parser [YangStatement]
-ySub = do
+substatements :: Parser [Statement]
+substatements = do
     optSep
     next <- A.peekWord8'
     if next == CLOSE_CURLY
         then A.anyWord8 >> return []
         else do
-            hd <- yStatement
-            tl <- ySub
+            hd <- statement
+            tl <- substatements
             return (hd : tl)
 
-yArgument :: Parser Text
-yArgument = (sep >> yArgument') <|> return ""
+argument :: Parser Text
+argument = (sep >> argument') <|> return ""
 
-yArgument' :: Parser Text
-yArgument' = do
+argument' :: Parser Text
+argument' = do
     next <- A.peekWord8'
     case next of
         SEMICOLON    -> return ""

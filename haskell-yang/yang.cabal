@@ -37,4 +37,3 @@ executable parsemod
   main-is:	       ParseModule.hs
   hs-source-dirs:      examples
   default-language:    Haskell2010
-  
