@@ -26,8 +26,8 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Data.Yang.Module.Parser, Data.Yang.Module.Types
-  -- other-modules:       
-  other-extensions:    CPP, OverloadedStrings, BangPatterns
+  other-modules:       Data.Yang.Module.Parser.Internal
+  other-extensions:    CPP, OverloadedStrings
   build-depends:       base >=4.8, bytestring, attoparsec, text
   -- hs-source-dirs:      
   default-language:    Haskell2010
