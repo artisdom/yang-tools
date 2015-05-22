@@ -19,7 +19,7 @@ import Data.Monoid (mappend, mempty)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8', decodeUtf8, encodeUtf8)
 import Data.Word (Word8)
-import Data.Yang.Module.Types (Keyword(..), Module(..), Statement(..))
+import Data.Yang.Module.Types (Keyword(..), Statement(..))
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Data.ByteString.Lazy as L
@@ -47,16 +47,15 @@ import qualified Data.Attoparsec.Zepto as Z
 #define SPACE 32
 #define TAB 9
 
-yModule :: Parser Module
+yModule :: Parser Statement
 yModule = do
     optSep
     s <- statement
     optSep
     A.endOfInput
-    case kw s of
-        BuiltIn "module"    -> return $ Module (arg s) (stmts s)
-        BuiltIn "submodule" -> return $ Submodule (arg s) (stmts s)
-        _                   -> fail "missing '(sub)module' keyword"
+    if kw s == BuiltIn "module" || kw s == BuiltIn "submodule"
+        then return s 
+        else fail "missing '(sub)module' keyword"
 
 statement :: Parser Statement
 statement = do

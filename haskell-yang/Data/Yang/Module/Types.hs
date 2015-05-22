@@ -2,7 +2,6 @@ module Data.Yang.Module.Types
     (
       -- * Core YANG types
       Keyword(..)
-    , Module(..)
     , Statement(..)
     ) where
 
@@ -15,12 +14,7 @@ data Keyword
      deriving (Eq, Show)
 
 data Statement = Statement
-    { kw    :: !Keyword
-    , arg   :: !Text
-    , stmts :: [Statement]
+    { kw       :: !Keyword
+    , arg      :: !Text
+    , substmts :: [Statement]
     } deriving (Show)
-
-data Module
-    = Module    !Text [Statement]
-    | Submodule !Text [Statement]
-    deriving (Show)
