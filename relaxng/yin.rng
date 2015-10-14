@@ -961,9 +961,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="action-stmt"/>
 	  </choice>
 	</zeroOrMore>
-	<zeroOrMore>
+	<oneOrMore>
 	  <ref name="data-def-stmt"/>
-	</zeroOrMore>
+	</oneOrMore>
 	<ref name="extensions"/>
       </interleave>
     </element>
