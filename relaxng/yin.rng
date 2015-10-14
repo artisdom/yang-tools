@@ -809,6 +809,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="grouping-stmt"/>
 	    <ref name="data-def-stmt"/>
 	    <ref name="action-stmt"/>
+	    <ref name="notification-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<ref name="extensions"/>
@@ -844,6 +845,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="grouping-stmt"/>
 	    <ref name="data-def-stmt"/>
 	    <ref name="action-stmt"/>
+	    <ref name="notification-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<ref name="extensions"/>
@@ -961,6 +963,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="typedef-stmt"/>
 	    <ref name="grouping-stmt"/>
 	    <ref name="action-stmt"/>
+	    <ref name="notification-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<oneOrMore>
@@ -1240,6 +1243,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="data-def-stmt"/>
 	    <ref name="case-stmt"/>
 	    <ref name="action-stmt"/>
+	    <ref name="notification-stmt"/>
 	  </choice>
 	</oneOrMore>
 	<ref name="extensions"/>
@@ -1265,6 +1269,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="data-def-stmt"/>
 	    <ref name="case-stmt"/>
 	    <ref name="action-stmt"/>
+	    <ref name="notification-stmt"/>
 	  </choice>
 	</oneOrMore>
 	<ref name="extensions"/>
