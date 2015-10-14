@@ -171,9 +171,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
-	<optional>
+	<zeroOrMore>
 	  <ref name="base-stmt"/>
-	</optional>
+	</zeroOrMore>
 	<ref name="status-desc-ref"/>
 	<ref name="extensions"/>
       </interleave>
@@ -638,7 +638,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <attribute name="name">
       <value>identityref</value>
     </attribute>
-    <ref name="base-stmt"/>
+    <oneOrMore>
+      <ref name="base-stmt"/>
+    </oneOrMore>
   </define>
 
   <define name="union-type">
