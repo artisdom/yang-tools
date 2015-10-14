@@ -806,6 +806,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="typedef-stmt"/>
 	    <ref name="grouping-stmt"/>
 	    <ref name="data-def-stmt"/>
+	    <ref name="action-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<ref name="extensions"/>
@@ -840,6 +841,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	    <ref name="typedef-stmt"/>
 	    <ref name="grouping-stmt"/>
 	    <ref name="data-def-stmt"/>
+	    <ref name="action-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<ref name="extensions"/>
@@ -956,6 +958,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	  <choice>
 	    <ref name="typedef-stmt"/>
 	    <ref name="grouping-stmt"/>
+	    <ref name="action-stmt"/>
 	  </choice>
 	</zeroOrMore>
 	<zeroOrMore>
@@ -1234,6 +1237,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	  <choice>
 	    <ref name="data-def-stmt"/>
 	    <ref name="case-stmt"/>
+	    <ref name="action-stmt"/>
 	  </choice>
 	</oneOrMore>
 	<ref name="extensions"/>
@@ -1258,6 +1262,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	  <choice>
 	    <ref name="data-def-stmt"/>
 	    <ref name="case-stmt"/>
+	    <ref name="action-stmt"/>
 	  </choice>
 	</oneOrMore>
 	<ref name="extensions"/>
@@ -1277,6 +1282,33 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
   <define name="rpc-stmt">
     <element name="rpc">
+      <attribute name="name">
+	<ref name="identifier"/>
+      </attribute>
+      <interleave>
+	<zeroOrMore>
+	  <ref name="if-feature-stmt"/>
+	</zeroOrMore>
+	<ref name="status-desc-ref"/>
+	<zeroOrMore>
+	  <choice>
+	    <ref name="typedef-stmt"/>
+	    <ref name="grouping-stmt"/>
+	  </choice>
+	</zeroOrMore>
+	<optional>
+	  <ref name="input-stmt"/>
+	</optional>
+	<optional>
+	  <ref name="output-stmt"/>
+	</optional>
+	<ref name="extensions"/>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="action-stmt">
+    <element name="action">
       <attribute name="name">
 	<ref name="identifier"/>
       </attribute>
