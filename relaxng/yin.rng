@@ -2,7 +2,7 @@
 
 <!-- Program name: yin.rng
 
-Copyright © 2013 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
+Copyright © 2015 by Ladislav Lhotka, CZ.NIC <lhotka@nic.cz>
 
 RELAX NG schema for YIN (see RFC 6020).
 
@@ -196,6 +196,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <ref name="leaf-list-stmt"/>
       <ref name="list-stmt"/>
       <ref name="choice-stmt"/>
+      <ref name="anydata-stmt"/>
       <ref name="anyxml-stmt"/>
       <ref name="uses-stmt"/>
     </choice>
@@ -1059,6 +1060,33 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<zeroOrMore>
 	  <ref name="data-def-stmt"/>
 	</zeroOrMore>
+	<ref name="extensions"/>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="anydata-stmt">
+    <element name="anydata">
+      <attribute name="name">
+	<ref name="identifier"/>
+      </attribute>
+      <interleave>
+	<optional>
+	  <ref name="when-stmt"/>
+	</optional>
+	<zeroOrMore>
+	  <ref name="if-feature-stmt"/>
+	</zeroOrMore>
+	<zeroOrMore>
+	  <ref name="must-stmt"/>
+	</zeroOrMore>
+	<optional>
+	  <ref name="config-stmt"/>
+	</optional>
+	<optional>
+	  <ref name="mandatory-stmt"/>
+	</optional>
+	<ref name="status-desc-ref"/>
 	<ref name="extensions"/>
       </interleave>
     </element>
