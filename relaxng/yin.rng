@@ -93,7 +93,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="yang-version-stmt"/>
       </optional>
       <ref name="belongs-to-stmt"/>
-      <ref name="extensions"/>
     </interleave>
   </define>
 
@@ -441,7 +440,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <interleave>
       <ref name="fraction-digits-stmt"/>
       <ref name="range-stmt"/>
-      <ref name="extensions"/>
     </interleave>
   </define>
 
@@ -453,6 +451,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	  <param name="maxInclusive">18</param>
 	</data>
       </attribute>
+      <ref name="extensions"/>
     </element>
   </define>
 
@@ -499,7 +498,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <interleave>
       <ref name="length-stmt"/>
       <ref name="pattern-stmts"/>
-      <ref name="extensions"/>
     </interleave>
   </define>
 
@@ -551,6 +549,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <attribute name="value">
 	<ref name="modifier-arg"/>
       </attribute>
+      <ref name="extensions"/>
     </element>
   </define>
 
@@ -630,7 +629,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
       <optional>
 	<ref name="length-stmt"/>
       </optional>
-      <ref name="extensions"/>
     </interleave>
   </define>
 
