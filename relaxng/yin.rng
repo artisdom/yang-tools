@@ -159,7 +159,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   <define name="if-feature-stmt">
     <element name="if-feature">
       <attribute name="name">
-	<ref name="string"/>
+	<data type="string"/>
       </attribute>
       <ref name="extensions"/>
     </element>
