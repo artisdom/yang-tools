@@ -531,6 +531,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	</attribute>
 	<interleave>
 	  <optional>
+	    <ref name="modifier-stmt"/>
+	  </optional>
+	  <optional>
 	    <ref name="error-message-stmt"/>
 	  </optional>
 	  <optional>
@@ -541,6 +544,18 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	</interleave>
       </element>
     </zeroOrMore>
+  </define>
+
+  <define name="modifier-stmt">
+    <element name="modifier">
+      <attribute name="value">
+	<ref name="modifier-arg"/>
+      </attribute>
+    </element>
+  </define>
+
+  <define name="modifier-arg">
+    <value>invert-match</value>
   </define>
 
   <define name="default-stmt">
