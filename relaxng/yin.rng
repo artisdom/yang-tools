@@ -923,6 +923,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<zeroOrMore>
 	  <ref name="must-stmt"/>
 	</zeroOrMore>
+	<zeroOrMore>
+	  <ref name="default-stmt"/>
+	</zeroOrMore>
 	<optional>
 	  <ref name="config-stmt"/>
 	</optional>
@@ -1214,6 +1217,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <interleave>
       <zeroOrMore>
 	<ref name="must-stmt"/>
+      </zeroOrMore>
+      <zeroOrMore>
+	<ref name="default-stmt"/>
       </zeroOrMore>
       <optional>
 	<ref name="config-stmt"/>
