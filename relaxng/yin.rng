@@ -146,22 +146,22 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<ref name="extensions"/>
       </interleave>
     </element>
   </define>
 
-  <define name="if-feature-stmt">
-    <element name="if-feature">
-      <attribute name="name">
-	<data type="string"/>
-      </attribute>
-      <ref name="extensions"/>
-    </element>
+  <define name="if-feature-stmts">
+    <zeroOrMore>
+      <element name="if-feature">
+	<attribute name="name">
+	  <data type="string"/>
+	</attribute>
+	<ref name="extensions"/>
+      </element>
+    </zeroOrMore>
   </define>
 
   <define name="identity-stmt">
@@ -170,6 +170,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
+	<ref name="if-feature-stmts"/>
 	<zeroOrMore>
 	  <ref name="base-stmt"/>
 	</zeroOrMore>
@@ -582,6 +583,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <element name="enum">
       <attribute name="name"/>
       <interleave>
+	<ref name="if-feature-stmts"/>
 	<optional>
 	  <ref name="value-stmt"/>
 	</optional>
@@ -606,6 +608,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
+	<ref name="if-feature-stmts"/>
 	<optional>
 	  <ref name="position-stmt"/>
 	</optional>
@@ -843,9 +846,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<zeroOrMore>
 	  <ref name="must-stmt"/>
 	</zeroOrMore>
@@ -879,9 +880,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="type-stmt"/>
 	<optional>
 	  <ref name="units-stmt"/>
@@ -913,9 +912,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="type-stmt"/>
 	<optional>
 	  <ref name="units-stmt"/>
@@ -953,9 +950,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<zeroOrMore>
 	  <ref name="must-stmt"/>
 	</zeroOrMore>
@@ -1029,9 +1024,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<optional>
 	  <ref name="default-stmt"/>
 	</optional>
@@ -1072,9 +1065,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<zeroOrMore>
 	  <ref name="data-def-stmt"/>
@@ -1093,9 +1084,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<zeroOrMore>
 	  <ref name="must-stmt"/>
 	</zeroOrMore>
@@ -1120,9 +1109,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<zeroOrMore>
 	  <ref name="must-stmt"/>
 	</zeroOrMore>
@@ -1147,9 +1134,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<zeroOrMore>
 	  <ref name="refine-stmt"/>
@@ -1168,6 +1153,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="descendant-schema-nodeid"/>
       </attribute>
       <interleave>
+	<ref name="if-feature-stmts"/>
 	<choice>
 	  <ref name="refine-container-stmts"/>
 	  <ref name="refine-leaf-stmts"/>
@@ -1284,9 +1270,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<oneOrMore>
 	  <choice>
@@ -1310,9 +1294,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<optional>
 	  <ref name="when-stmt"/>
 	</optional>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<oneOrMore>
 	  <choice>
@@ -1343,9 +1325,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<zeroOrMore>
 	  <choice>
@@ -1370,9 +1350,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<zeroOrMore>
 	  <choice>
@@ -1433,9 +1411,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	<ref name="identifier"/>
       </attribute>
       <interleave>
-	<zeroOrMore>
-	  <ref name="if-feature-stmt"/>
-	</zeroOrMore>
+	<ref name="if-feature-stmts"/>
 	<ref name="status-desc-ref"/>
 	<zeroOrMore>
 	  <choice>
