@@ -429,6 +429,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 		<ref name="length-stmt"/>
 		<ref name="pattern-stmts"/>
 	      </interleave>
+	      <oneOrMore>
+		<ref name="enum-stmt"/>
+	      </oneOrMore>
+	      <oneOrMore>
+		<ref name="bit-stmt"/>
+	      </oneOrMore>
 	    </choice>
 	  </group>
 	</choice>
@@ -642,7 +648,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     <attribute name="name">
       <value>leafref</value>
     </attribute>
-    <ref name="path-stmt"/>
+    <interleave>
+      <ref name="path-stmt"/>
+      <optional>
+	<ref name="require-instance-stmt"/>
+      </optional>
+    </interleave>
   </define>
 
   <define name="path-stmt">
